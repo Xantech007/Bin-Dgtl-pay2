@@ -71,6 +71,7 @@ exit;
 }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -84,7 +85,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <style>
 
-/* SAME CSS AS LOGIN */
+/* SAME STYLE AS LOGIN */
 
 body{
 margin:0;
@@ -106,28 +107,7 @@ padding:30px;
 background:#14161c;
 border-radius:20px;
 padding:50px 40px;
-position:relative;
-overflow:hidden;
 box-shadow:0 0 40px rgba(0,0,0,.6);
-}
-
-.bg{
-position:absolute;
-right:-40px;
-bottom:-20px;
-width:340px;
-opacity:.25;
-animation:float 4s infinite;
-pointer-events:none;
-}
-
-@keyframes float{
-50%{transform:translateY(-20px)}
-}
-
-.box > *{
-position:relative;
-z-index:1;
 }
 
 .logo{
@@ -143,6 +123,25 @@ text-align:center;
 color:#f0b24b;
 font-size:28px;
 margin:15px 0 25px;
+}
+
+.tabs{
+display:flex;
+margin-bottom:20px;
+}
+
+.tabs div{
+flex:1;
+text-align:center;
+padding:12px;
+color:#aaa;
+cursor:pointer;
+border-bottom:2px solid transparent;
+}
+
+.tabs .active{
+color:#fff;
+border-color:#fff;
 }
 
 .input{
@@ -188,6 +187,14 @@ background:#2b2b2b;
 color:white;
 }
 
+.form{
+display:none;
+}
+
+.form.active{
+display:block;
+}
+
 .msg{
 color:red;
 text-align:center;
@@ -202,12 +209,18 @@ margin-top:10px;
 <div class="wrapper">
 <div class="box">
 
-<img src="assets/images/wallet.png" class="bg">
 <img src="assets/images/logo.webp" class="logo">
 
 <div class="title">Create Account</div>
 
-<form method="POST">
+<div class="tabs">
+<div class="active" onclick="switchTab(event,'emailForm')">Email Sign Up</div>
+<div onclick="switchTab(event,'phoneForm')">Phone Sign Up</div>
+</div>
+
+<!-- EMAIL REGISTER -->
+
+<form method="POST" id="emailForm" class="form active">
 
 <input type="hidden" name="type" value="email">
 
@@ -234,7 +247,42 @@ margin-top:10px;
 <button type="submit" class="btn signup">Create Account</button>
 
 <button type="button" class="btn signin"
-onclick="window.location.href='login.php'">
+onclick="location.href='login.php'">
+Sign In
+</button>
+
+</form>
+
+<!-- PHONE REGISTER -->
+
+<form method="POST" id="phoneForm" class="form">
+
+<input type="hidden" name="type" value="phone">
+
+<div class="input">
+<i class="fa fa-phone"></i>
+<input type="text" name="phone" placeholder="Phone Number" required>
+</div>
+
+<div class="input">
+<i class="fa fa-lock"></i>
+<input type="password" name="password" placeholder="Password" required>
+</div>
+
+<div class="input">
+<i class="fa fa-lock"></i>
+<input type="password" name="confirm" placeholder="Confirm Password" required>
+</div>
+
+<div class="input">
+<i class="fa fa-thumbs-up"></i>
+<input type="text" name="invite" placeholder="Invitation Code">
+</div>
+
+<button type="submit" class="btn signup">Create Account</button>
+
+<button type="button" class="btn signin"
+onclick="location.href='login.php'">
 Sign In
 </button>
 
@@ -246,6 +294,25 @@ Sign In
 
 </div>
 </div>
+
+<script>
+
+function switchTab(event,id){
+
+document.querySelectorAll('.form')
+.forEach(f=>f.classList.remove('active'));
+
+document.getElementById(id)
+.classList.add('active');
+
+document.querySelectorAll('.tabs div')
+.forEach(t=>t.classList.remove('active'));
+
+event.target.classList.add('active');
+
+}
+
+</script>
 
 </body>
 </html>
