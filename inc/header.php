@@ -1722,15 +1722,18 @@ padding:6px 12px;
 
 /* ================= MINE PAGE ================= */
 
-.mine-container{
+.mine-wrapper{
 margin:20px;
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:20px;
+border-radius:15px;
 color:#fff;
 }
 
 
-/* HEADER */
+/* TOP SECTION */
 
-.mine-header{
+.mine-top{
 display:flex;
 justify-content:space-between;
 align-items:center;
@@ -1740,25 +1743,40 @@ margin-bottom:20px;
 .mine-user h3{
 margin:0;
 font-size:16px;
+font-weight:500;
 }
 
 .vip-badge{
 background:#f0b24b;
 color:#000;
-padding:3px 10px;
+padding:4px 10px;
 border-radius:10px;
 font-size:12px;
-margin-top:5px;
 display:inline-block;
-}
-
-.mine-usdt img{
-width:70px;
-border-radius:10px;
+margin-top:6px;
 }
 
 
-/* BALANCE BOX */
+/* GIF BOX */
+
+.mine-gif{
+width:95px;
+height:95px;
+border-radius:12px;
+overflow:hidden;
+background:linear-gradient(135deg,#5ed1a6,#3fb389);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.mine-gif img{
+width:90%;
+height:auto;
+}
+
+
+/* BALANCE PANEL */
 
 .mine-balance{
 background:linear-gradient(90deg,#e6cf9b,#e7b55f);
@@ -1768,16 +1786,15 @@ display:flex;
 justify-content:space-between;
 text-align:center;
 color:#000;
-margin-bottom:20px;
 }
 
-.mine-balance p{
+.balance-item p{
 margin:0;
 font-size:12px;
 }
 
-.mine-balance h2{
-margin:5px 0 0;
+.balance-item h2{
+margin-top:6px;
 font-size:20px;
 }
 
@@ -1785,8 +1802,9 @@ font-size:20px;
 /* MENU */
 
 .mine-menu{
+margin:20px;
 background:#111;
-border-radius:10px;
+border-radius:12px;
 overflow:hidden;
 }
 
@@ -1813,7 +1831,6 @@ text-align:center;
 .menu-item:hover{
 background:#1b1b1b;
 }
-
     
 </style>
 </head>
