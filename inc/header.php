@@ -1087,6 +1087,28 @@ opacity:.7;
 font-size:40px;
 margin-bottom:10px;
 }   
+
+/* TASK RESET */
+
+.task-reset-container{
+text-align:center;
+margin:20px;
+}
+
+.reset-time{
+font-size:24px;
+font-weight:bold;
+color:#f0b24b;
+}
+
+.reset-label{
+color:#f0b24b;
+font-size:14px;
+margin-top:5px;
+}
+
+
+
     
 </style>
 </head>
