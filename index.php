@@ -26,6 +26,17 @@ $query = $pdo->query("SELECT title FROM news ORDER BY id DESC");
 
 <?php include "inc/header.php"; ?>
 
+<?php if(isset($_SESSION['recharge_msg'])): ?>
+
+<div class="recharge-success">
+<?php 
+echo $_SESSION['recharge_msg']; 
+unset($_SESSION['recharge_msg']);
+?>
+</div>
+
+<?php endif; ?>
+
 <!-- Scrolling News Section -->
 <div class="news-wrapper">
     <div class="news-marquee">
