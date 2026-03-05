@@ -1671,6 +1671,161 @@ padding:6px 12px;
 
 }
     
+/* ================= VIP CARD ================= */
+
+.vip-card{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+border-radius:14px;
+padding:20px;
+margin-bottom:18px;
+position:relative;
+display:flex;
+align-items:center;
+color:#fff;
+overflow:hidden;
+}
+
+
+/* VIP LABEL */
+
+.vip-label{
+position:absolute;
+top:0;
+left:0;
+background:linear-gradient(90deg,#ff7b6b,#ffb36b);
+padding:4px 12px;
+font-size:12px;
+font-weight:bold;
+border-radius:0 0 10px 0;
+color:#000;
+}
+
+
+/* LEFT ICON */
+
+.vip-left{
+width:70px;
+display:flex;
+justify-content:center;
+align-items:center;
+margin-right:15px;
+}
+
+.vip-left img{
+width:50px;
+}
+
+
+/* INFO SECTION */
+
+.vip-info{
+flex:1;
+font-size:13px;
+}
+
+.vip-info div{
+display:flex;
+justify-content:space-between;
+margin-bottom:6px;
+}
+
+.vip-info span{
+opacity:.85;
+}
+
+.vip-info strong{
+font-weight:600;
+}
+
+.green{
+color:#00e676;
+}
+
+
+/* ================= UNLOCK BUTTON ================= */
+
+.vip-action{
+position:absolute;
+right:18px;
+bottom:18px;
+}
+
+.vip-action button{
+background:linear-gradient(90deg,#f6c27a,#e7a850);
+border:none;
+padding:8px 18px;
+border-radius:20px;
+font-size:12px;
+cursor:pointer;
+color:#fff;
+position:relative;
+overflow:hidden;
+}
+
+
+/* ================= SHINING GLASS EFFECT ================= */
+
+.vip-action button::before{
+content:'';
+position:absolute;
+top:0;
+left:-100%;
+width:50%;
+height:100%;
+background:linear-gradient(
+120deg,
+transparent,
+rgba(255,255,255,0.6),
+transparent
+);
+transform:skewX(-25deg);
+}
+
+/* animation every 3 seconds */
+
+.vip-action button{
+animation:shineLoop 3s infinite;
+}
+
+@keyframes shineLoop{
+0%{ }
+70%{ }
+100%{ }
+}
+
+.vip-action button:hover::before{
+animation:shine 0.8s;
+}
+
+@keyframes shine{
+0%{ left:-100%; }
+100%{ left:200%; }
+}
+
+
+/* AUTOMATIC SHINE */
+
+.vip-action button::before{
+animation:glassshine 3s infinite;
+}
+
+@keyframes glassshine{
+
+0%{
+left:-120%;
+}
+
+40%{
+left:150%;
+}
+
+100%{
+left:150%;
+}
+
+}
+
+
     
 </style>
 </head>
