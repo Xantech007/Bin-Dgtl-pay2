@@ -51,12 +51,6 @@ Withdrawal account
 </div>
 
 
-<div class="financial-filter">
-<i class="fa-solid fa-filter"></i>
-</div>
-
-
-
 <!-- BASIC ACCOUNT -->
 
 <div class="financial-content active" id="basic">
