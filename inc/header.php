@@ -558,28 +558,42 @@ color:#ccc;
 font-size:16px;
 }
 
-/* DEPOSIT PAGE */
+/* ================= DEPOSIT PAGE ================= */
 
 .deposit-header{
 display:flex;
 align-items:center;
 padding:15px;
 background:linear-gradient(90deg,#2c1f16,#4a3324);
-color:white;
+color:#fff;
+font-size:16px;
+}
+
+.deposit-header a{
+color:#fff;
+text-decoration:none;
+margin-right:10px;
+font-size:18px;
 }
 
 .deposit-header span{
 flex:1;
 text-align:center;
+font-weight:500;
 }
+
+/* MAIN CONTAINER */
 
 .deposit-container{
 margin:20px;
-background:linear-gradient(90deg,#3a2b20,#5a402e);
+background:linear-gradient(135deg,#3a2b20,#5a402e);
 padding:20px;
 border-radius:15px;
-color:white;
+color:#fff;
+box-shadow:0 4px 15px rgba(0,0,0,0.4);
 }
+
+/* TOP BRAND */
 
 .deposit-top{
 display:flex;
@@ -594,17 +608,29 @@ height:30px;
 border-radius:50%;
 }
 
+.deposit-top span{
+font-size:14px;
+font-weight:500;
+}
+
+/* PAYMENT METHOD */
+
 .deposit-method{
 display:flex;
 justify-content:center;
 align-items:center;
 gap:8px;
 margin-bottom:15px;
+font-size:14px;
 }
 
 .method-icon{
 width:28px;
+height:28px;
+object-fit:contain;
 }
+
+/* QR CODE */
 
 .deposit-qr{
 display:flex;
@@ -614,17 +640,23 @@ margin:20px 0;
 
 .deposit-qr img{
 width:180px;
-border-radius:10px;
+height:180px;
+border-radius:12px;
+background:#fff;
+padding:10px;
 }
+
+/* ADDRESS */
 
 .deposit-address-title{
 text-align:center;
+font-size:15px;
 margin-bottom:10px;
 }
 
 .deposit-address{
 display:flex;
-background:#111;
+background:#222;
 border-radius:10px;
 overflow:hidden;
 margin-bottom:20px;
@@ -633,44 +665,102 @@ margin-bottom:20px;
 .deposit-address input{
 flex:1;
 border:none;
-background:transparent;
-color:white;
+background:#222;
+color:#fff;
 padding:12px;
+font-size:13px;
+outline:none;
 }
 
 .deposit-address button{
 background:#f0b24b;
 border:none;
-padding:12px 16px;
+padding:10px 16px;
 cursor:pointer;
+font-size:13px;
+border-radius:0 10px 10px 0;
 }
+
+/* UPLOAD PROOF */
+
+.upload-proof{
+margin-bottom:20px;
+}
+
+.upload-proof label{
+font-size:13px;
+display:block;
+margin-bottom:6px;
+}
+
+.upload-proof input{
+width:100%;
+background:#111;
+border:1px solid #444;
+padding:10px;
+border-radius:8px;
+color:#fff;
+}
+
+/* RECHARGE BUTTON */
 
 .deposit-btn{
 width:100%;
 padding:14px;
 background:#f0b24b;
 border:none;
-border-radius:25px;
-font-size:16px;
+border-radius:30px;
+font-size:15px;
 cursor:pointer;
+color:#fff;
+font-weight:500;
+box-shadow:0 4px 10px rgba(0,0,0,0.4);
 }
 
-.upload-proof{
-margin-bottom:15px;
+/* MESSAGE */
+
+.deposit-msg{
+margin-top:15px;
+color:#4CAF50;
+text-align:center;
+font-size:14px;
 }
+
+/* NOTE */
 
 .deposit-note{
 margin-top:20px;
 font-size:12px;
-opacity:.8;
+opacity:0.85;
+line-height:1.5;
+background:#1a1a1a;
+padding:15px;
+border-radius:10px;
 }
 
-.deposit-msg{
-margin-top:10px;
-color:#4CAF50;
-text-align:center;
+/* MOBILE FIX */
+
+@media(max-width:480px){
+
+.deposit-container{
+margin:15px;
+padding:18px;
 }
 
+.deposit-qr img{
+width:150px;
+height:150px;
+}
+
+.deposit-address input{
+font-size:12px;
+}
+
+.deposit-btn{
+font-size:14px;
+}
+
+}
     
 </style>
 </head>
