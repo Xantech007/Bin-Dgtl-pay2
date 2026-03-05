@@ -761,6 +761,17 @@ font-size:14px;
 }
 
 }
+
+.recharge-success{
+margin:20px;
+background:#2ecc71;
+color:#fff;
+padding:15px;
+border-radius:10px;
+text-align:center;
+font-size:14px;
+}
+
     
 </style>
 </head>
