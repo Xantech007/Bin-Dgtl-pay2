@@ -54,8 +54,9 @@ $received
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
 ->execute([$amount,$user_id]);
 
-$msg="Withdrawal submitted successfully";
-
+$_SESSION['withdraw_msg']="Withdrawal request submitted successfully";
+header("Location: index.php");
+exit;
 }
 }
 ?>
