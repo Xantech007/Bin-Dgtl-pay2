@@ -236,49 +236,89 @@ body{
 
 /* ================= TASK HALL ================= */
 
+
 .task-section{
-    margin:20px;
+margin:20px;
+}
+
+.task-title{
+color:#fff;
+font-size:18px;
+margin-bottom:15px;
 }
 
 .task-card{
-    width:100%;
-    background:linear-gradient(135deg,#3a2b20,#5a402e);
-    border-radius:15px;
-    padding:15px;
-    margin-bottom:15px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:0 4px 12px rgba(0,0,0,0.2);
-    color:#fff;
+display:flex;
+align-items:center;
+justify-content:space-between;
+background:linear-gradient(90deg,#3a2b20,#5a402e);
+border-radius:14px;
+margin-bottom:14px;
+text-decoration:none;
+color:white;
+overflow:hidden;
 }
+
+/* LEFT ICON */
 
 .task-left{
-    width:45px;
-    height:45px;
-    object-fit:cover;
-    border-radius:8px;
+position:relative;
+width:70px;
+height:70px;
+display:flex;
+align-items:center;
+justify-content:center;
 }
+
+.vip-icon{
+width:45px;
+height:45px;
+}
+
+/* LOCK */
+
+.lock-overlay{
+position:absolute;
+color:white;
+font-size:20px;
+}
+
+/* TEXT */
 
 .task-content{
-    flex:1;
-    margin:0 15px;
+flex:1;
+padding:15px;
 }
 
-.task-content h3{
-    margin:0;
-    font-size:15px;
+.unlock-text{
+font-size:13px;
+opacity:.8;
 }
 
-.task-content p{
-    margin:4px 0 0 0;
-    font-size:13px;
-    color:#ddd;
+.unlock-text span{
+color:#f6c27a;
+font-weight:bold;
 }
 
-.task-right{
-    width:18px;
-    height:auto;
+.vip-name{
+font-size:14px;
+margin-top:4px;
+}
+
+/* RIGHT ARROW */
+
+.task-arrow{
+width:55px;
+height:70px;
+background:linear-gradient(180deg,#f6c65c,#e5a826);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.task-arrow i{
+color:white;
+font-size:18px;
 }
 
 /* ================= MEMBER LIST ================= */
