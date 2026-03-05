@@ -1762,17 +1762,26 @@ margin-top:6px;
 .mine-gif{
 width:95px;
 height:95px;
-border-radius:12px;
-overflow:hidden;
-background:linear-gradient(135deg,#5ed1a6,#3fb389);
 display:flex;
 align-items:center;
 justify-content:center;
 }
 
+
+/* GIF IMAGE */
+
 .mine-gif img{
-width:90%;
-height:auto;
+width:95px;
+height:95px;
+object-fit:cover;
+border-radius:12px;
+}
+
+.mine-gif img{
+width:95px;
+height:95px;
+border-radius:12px;
+box-shadow:0 0 20px rgba(0,255,170,0.35);
 }
 
 
