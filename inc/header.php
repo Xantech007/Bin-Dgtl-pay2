@@ -1502,11 +1502,7 @@ border-radius:14px;
 padding:20px;
 margin-bottom:18px;
 position:relative;
-display:flex;
-align-items:flex-start;
-gap:18px;
 color:#fff;
-min-height:120px;
 }
 
 
@@ -1525,20 +1521,30 @@ color:#000;
 }
 
 
-/* ================= LEFT ICON ================= */
+/* ROW LAYOUT */
+
+.vip-row{
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+
+/* ICON */
 
 .vip-left{
 width:70px;
 display:flex;
-justify-content:center;
 align-items:center;
+justify-content:center;
 }
 
 .vip-left img{
-width:48px;
+width:50px;
 }
 
-/* ================= VIP INNER CONTAINER ================= */
+
+/* INNER DETAILS CONTAINER */
 
 .vip-details{
 background:rgba(0,0,0,0.25);
@@ -1548,11 +1554,10 @@ flex:1;
 display:grid;
 grid-template-columns:1fr auto;
 row-gap:8px;
-align-items:center;
 }
 
 
-/* LEFT COLUMN (LABELS) */
+/* LABEL COLUMN */
 
 .vip-details .label{
 opacity:.85;
@@ -1560,7 +1565,7 @@ font-size:13px;
 }
 
 
-/* RIGHT COLUMN (VALUES) */
+/* VALUE COLUMN */
 
 .vip-details .value{
 text-align:right;
@@ -1569,9 +1574,9 @@ font-size:13px;
 }
 
 
-/* PROFIT GREEN */
+/* GREEN TEXT */
 
-.vip-details .green{
+.green{
 color:#00e676;
 }
 
@@ -1580,40 +1585,16 @@ color:#00e676;
 
 .usdt{
 color:#a0a0a0;
-font-weight:500;
 margin-left:3px;
 }
 
-/* ================= INFO SECTION ================= */
 
-.vip-info{
-flex:1;
-display:grid;
-grid-template-columns:1fr auto;
-row-gap:6px;
-font-size:13px;
-}
-
-.vip-info span{
-opacity:.85;
-}
-
-.vip-info strong{
-font-weight:600;
-text-align:right;
-}
-
-.green{
-color:#00e676;
-}
-
-
-/* ================= UNLOCK BUTTON ================= */
+/* ================= BUTTON ================= */
 
 .vip-action{
-position:absolute;
-right:20px;
-bottom:18px;
+margin-top:12px;
+display:flex;
+justify-content:flex-end;
 }
 
 .vip-action button{
@@ -1629,7 +1610,7 @@ overflow:hidden;
 }
 
 
-/* ACTIVATED BUTTON */
+/* ACTIVATED */
 
 .vip-active{
 background:#777 !important;
@@ -1637,7 +1618,7 @@ cursor:default;
 }
 
 
-/* ================= SHINING GLASS EFFECT ================= */
+/* ================= SHINE EFFECT ================= */
 
 .vip-action button::before{
 content:'';
@@ -1658,17 +1639,11 @@ animation:glassshine 3s infinite;
 
 @keyframes glassshine{
 
-0%{
-left:-120%;
-}
+0%{ left:-120%; }
 
-35%{
-left:150%;
-}
+35%{ left:150%; }
 
-100%{
-left:150%;
-}
+100%{ left:150%; }
 
 }
 
@@ -1728,14 +1703,13 @@ cursor:pointer;
 
 .vip-card{
 padding:18px;
-gap:14px;
 }
 
 .vip-left img{
 width:42px;
 }
 
-.vip-info{
+.vip-details{
 font-size:12px;
 }
 
@@ -1745,7 +1719,6 @@ padding:6px 12px;
 }
 
 }
-
     
 </style>
 </head>
