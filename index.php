@@ -35,6 +35,9 @@ unset($_SESSION['recharge_msg']);
 ?>
 </div>
 
+<?php endif; ?>
+
+
 <?php if(isset($_SESSION['withdraw_msg'])): ?>
 
 <div class="withdraw-success">
@@ -43,8 +46,6 @@ echo $_SESSION['withdraw_msg'];
 unset($_SESSION['withdraw_msg']);
 ?>
 </div>
-
-<?php endif; ?>
 
 <?php endif; ?>
 
