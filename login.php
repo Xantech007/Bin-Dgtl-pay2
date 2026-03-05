@@ -21,7 +21,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if($user && password_verify($password, $user['password'])){
-        /* SAVE SESSION DATA */
         $_SESSION['user_id']   = $user['id'];
         $_SESSION['email']     = $user['email'];
         $_SESSION['vip_level'] = $user['vip_level'];
@@ -39,7 +38,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <title>Login</title>
+    <title>Login - BINANCE DIGITAL</title>
     <style>
         * {
             box-sizing: border-box;
@@ -53,7 +52,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             font-family: Arial, sans-serif;
         }
 
-        /* Full-screen stretched layout */
         .box {
             min-height: 100vh;
             background: #14161c;
@@ -65,7 +63,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             justify-content: center;
         }
 
-        /* Floating background - non-interactive */
         .bg {
             position: absolute;
             right: -50px;
@@ -183,7 +180,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             font-size: 15px;
         }
 
-        /* Desktop – limit content width */
         @media (min-width: 768px) {
             .box {
                 padding: 80px 60px;
@@ -194,7 +190,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             }
         }
 
-        /* Very small screens */
         @media (max-width: 360px) {
             .box {
                 padding: 50px 18px 30px;
