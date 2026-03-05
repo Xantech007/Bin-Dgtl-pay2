@@ -80,7 +80,7 @@ VIP<?php echo $vip['id']; ?>
 <div class="vip-row">
 
 <div class="vip-left">
-<img src="assets/images/vip.jpg">
+<img src="assets/images/logo-vip.png">
 </div>
 
 <div class="vip-details">
@@ -103,8 +103,6 @@ VIP<?php echo $vip['id']; ?>
 <div class="value">
 <?php echo number_format($vip['total_profit'],2); ?>
 <span class="usdt">USDT</span>
-</div>
-
 </div>
 
 </div>
