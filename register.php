@@ -74,32 +74,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             font-family: Arial, sans-serif;
         }
 
-        /* Prevent layout shift from scrollbar */
-        .viewport-wrapper {
-            width: 100vw;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .wrapper {
-            width: 100%;
-            max-width: 720px;
-            padding: 40px 20px;
-        }
-
+        /* Full-screen layout – no big wrapper anymore */
         .box {
+            min-height: 100vh;
             background: #14161c;
-            border-radius: 20px;
-            padding: 60px 55px;
+            padding: 60px 24px 40px;           /* generous top, smaller sides/bottom on mobile */
             position: relative;
-            overflow: visible;          /* changed from hidden */
+            overflow: visible;
             box-shadow: 0 0 40px rgba(0,0,0,.6);
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        /* Floating background - make it non-interactive */
+        /* Floating background - non-interactive */
         .bg {
             position: absolute;
             right: -50px;
@@ -107,7 +95,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             width: 360px;
             opacity: .25;
             animation: float 4s ease-in-out infinite;
-            pointer-events: none;       /* ← prevents blocking clicks */
+            pointer-events: none;
             z-index: 0;
         }
 
@@ -121,49 +109,60 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             height: 110px;
             border-radius: 50%;
             display: block;
-            margin: auto;
+            margin: 0 auto 20px;
             object-fit: cover;
         }
 
         .title {
             text-align: center;
             color: #f0b24b;
-            font-size: 30px;
-            margin: 15px 0 30px;
+            font-size: 32px;
+            margin: 0 0 40px;
         }
 
         .tabs {
             display: flex;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .tabs div {
             flex: 1;
             text-align: center;
-            padding: 12px;
+            padding: 14px;
             color: #aaa;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
         }
 
         .tabs .active {
             color: #fff;
-            border-color: #fff;
+            border-color: #f0b24b;
+        }
+
+        .form-container {
+            max-width: 420px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .input {
             display: flex;
             align-items: center;
             background: rgba(240,178,75,.25);
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 18px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             backdrop-filter: blur(6px);
         }
 
         .input i {
             color: white;
-            margin-right: 10px;
+            margin-right: 14px;
+            font-size: 20px;
         }
 
         .input input {
@@ -172,25 +171,26 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             outline: none;
             color: white;
             flex: 1;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             border: none;
             border-radius: 30px;
             font-size: 17px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 12px;
             position: relative;
             z-index: 2;
-            touch-action: manipulation;     /* improves mobile tap response */
+            touch-action: manipulation;
         }
 
         .signup {
             background: #f0b24b;
-            color: #fff;
+            color: #000;
         }
 
         .signin {
@@ -207,96 +207,100 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
 
         .msg {
-            color: red;
+            color: #ff6b6b;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 16px;
+            font-size: 15px;
         }
 
-        /* Bigger tap targets on small screens */
-        @media (max-width: 480px) {
-            .btn {
-                padding: 18px 16px;
-                font-size: 17px;
-            }
-            .input {
-                padding: 18px;
+        /* Desktop – limit max width of content */
+        @media (min-width: 768px) {
+            .box {
+                padding: 80px 60px;
+                max-width: 580px;
+                margin: 0 auto;
+                min-height: auto;
+                border-radius: 24px;
             }
         }
 
-        /* Optional modern scrollbar handling */
-        @supports (scrollbar-gutter: stable) {
-            html {
-                scrollbar-gutter: stable;
+        /* Very small phones – tighter padding */
+        @media (max-width: 360px) {
+            .box {
+                padding: 50px 18px 30px;
+            }
+            .title {
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="viewport-wrapper">
-    <div class="wrapper">
-        <div class="box">
-            <img src="assets/images/wallet.png" class="bg" alt="background decoration">
+<div class="box">
+    <img src="assets/images/wallet.png" class="bg" alt="background decoration">
 
-            <img src="assets/images/logo.webp" class="logo" alt="Logo">
+    <img src="assets/images/logo.webp" class="logo" alt="Logo">
 
-            <div class="title">Create Account</div>
+    <div class="title">Create Account</div>
 
-            <div class="tabs">
-                <div class="active" onclick="switchTab(event, 'emailForm')">Email Sign Up</div>
-                <div onclick="switchTab(event, 'phoneForm')">Phone Sign Up</div>
+    <div class="tabs">
+        <div class="active" onclick="switchTab(event, 'emailForm')">Email Sign Up</div>
+        <div onclick="switchTab(event, 'phoneForm')">Phone Sign Up</div>
+    </div>
+
+    <div class="form-container">
+
+        <!-- EMAIL REGISTER -->
+        <form method="POST" id="emailForm" class="form active">
+            <input type="hidden" name="type" value="email">
+            <div class="input">
+                <i class="fa fa-envelope"></i>
+                <input type="email" name="email" placeholder="Email" required autocomplete="email">
             </div>
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
+            </div>
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
+            </div>
+            <div class="input">
+                <i class="fa fa-thumbs-up"></i>
+                <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
+            </div>
+            <button type="submit" class="btn signup">Sign Up</button>
+            <button type="button" class="btn signin" onclick="location.href='login.php'">Already have an account? Sign In</button>
+        </form>
 
-            <!-- EMAIL REGISTER -->
-            <form method="POST" id="emailForm" class="form active">
-                <input type="hidden" name="type" value="email">
-                <div class="input">
-                    <i class="fa fa-envelope"></i>
-                    <input type="email" name="email" placeholder="Email" required autocomplete="email">
-                </div>
-                <div class="input">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
-                </div>
-                <div class="input">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
-                </div>
-                <div class="input">
-                    <i class="fa fa-thumbs-up"></i>
-                    <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
-                </div>
-                <button type="submit" class="btn signup">Sign Up</button>
-                <button type="button" class="btn signin" onclick="location.href='login.php'">Sign In</button>
-            </form>
+        <!-- PHONE REGISTER -->
+        <form method="POST" id="phoneForm" class="form">
+            <input type="hidden" name="type" value="phone">
+            <div class="input">
+                <i class="fa fa-phone"></i>
+                <input type="tel" name="phone" placeholder="Phone Number" required autocomplete="tel">
+            </div>
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
+            </div>
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
+            </div>
+            <div class="input">
+                <i class="fa fa-thumbs-up"></i>
+                <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
+            </div>
+            <button type="submit" class="btn signup">Sign Up</button>
+            <button type="button" class="btn signin" onclick="location.href='login.php'">Already have an account? Sign In</button>
+        </form>
 
-            <!-- PHONE REGISTER -->
-            <form method="POST" id="phoneForm" class="form">
-                <input type="hidden" name="type" value="phone">
-                <div class="input">
-                    <i class="fa fa-phone"></i>
-                    <input type="tel" name="phone" placeholder="Phone Number" required autocomplete="tel">
-                </div>
-                <div class="input">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
-                </div>
-                <div class="input">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
-                </div>
-                <div class="input">
-                    <i class="fa fa-thumbs-up"></i>
-                    <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
-                </div>
-                <button type="submit" class="btn signup">Sign Up</button>
-                <button type="button" class="btn signin" onclick="location.href='login.php'">Sign In</button>
-            </form>
+        <?php if($msg): ?>
+            <p class="msg"><?= htmlspecialchars($msg) ?></p>
+        <?php endif; ?>
 
-            <?php if($msg): ?>
-                <p class="msg"><?= htmlspecialchars($msg) ?></p>
-            <?php endif; ?>
-        </div>
     </div>
 </div>
 
