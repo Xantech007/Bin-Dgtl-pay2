@@ -1115,7 +1115,136 @@ font-size:14px;
 margin-top:5px;
 }
 
-/* TEAM LEVEL CARDS */
+/* ================= TEAM PAGE ================= */
+
+.team-container{
+margin:20px;
+color:#fff;
+}
+
+/* ================= REFERRAL BOX ================= */
+
+.ref-box{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:20px;
+border-radius:14px;
+margin-bottom:20px;
+}
+
+.ref-code{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:10px;
+}
+
+.ref-code span{
+font-size:14px;
+opacity:.9;
+}
+
+.ref-code strong{
+font-size:24px;
+font-weight:bold;
+}
+
+.ref-code button{
+background:#000;
+color:#fff;
+border:none;
+border-radius:20px;
+padding:4px 12px;
+font-size:12px;
+cursor:pointer;
+}
+
+.ref-link p{
+font-size:13px;
+margin:10px 0 5px;
+opacity:.8;
+}
+
+.ref-link{
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.ref-link input{
+flex:1;
+padding:8px 10px;
+border-radius:8px;
+border:none;
+background:#2b2b2b;
+color:#fff;
+font-size:12px;
+}
+
+.ref-link button{
+background:#000;
+color:#fff;
+border:none;
+border-radius:20px;
+padding:4px 12px;
+font-size:12px;
+cursor:pointer;
+}
+
+/* ================= SOCIAL ICONS ================= */
+
+.social-icons{
+display:flex;
+gap:12px;
+margin-top:15px;
+flex-wrap:wrap;
+}
+
+.social-icons i{
+width:34px;
+height:34px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#3c3c3c;
+font-size:14px;
+opacity:0;
+transform:scale(.5);
+transition:0.4s;
+}
+
+.social-icons i.show{
+opacity:1;
+transform:scale(1);
+}
+
+/* ================= TEAM STATS ================= */
+
+.team-stats{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:18px;
+border-radius:12px;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+text-align:center;
+margin-bottom:20px;
+}
+
+.team-stats span{
+font-size:12px;
+opacity:.8;
+display:block;
+}
+
+.team-stats strong{
+font-size:16px;
+display:block;
+margin-top:3px;
+}
+
+/* ================= LEVEL CARDS ================= */
 
 .team-level{
 position:relative;
@@ -1127,6 +1256,8 @@ margin-bottom:18px;
 color:white;
 overflow:hidden;
 }
+
+/* LEVEL COLORS */
 
 .level1{
 background:linear-gradient(90deg,#f1d24c,#2fb07f);
@@ -1140,7 +1271,6 @@ background:linear-gradient(90deg,#ff5d87,#ff7e66);
 background:linear-gradient(90deg,#5aa6d6,#a9d2a1);
 }
 
-
 /* LEFT BADGE */
 
 .level-badge{
@@ -1151,40 +1281,59 @@ min-width:110px;
 }
 
 .level-badge img{
-width:34px;
+width:36px;
 }
 
 .level-badge span{
 font-weight:bold;
+font-size:14px;
 }
-
 
 /* INNER PANEL */
 
 .level-panel{
 flex:1;
 background:rgba(0,0,0,0.2);
-padding:14px 18px;
+padding:15px 18px;
 border-radius:12px;
 display:flex;
 justify-content:space-between;
+align-items:center;
 }
-
 
 /* STATS */
 
-.level-stats p,
-.level-commission p{
-font-size:12px;
-opacity:.9;
-margin:0;
+.level-stats{
+display:flex;
+flex-direction:column;
+gap:6px;
 }
 
-.level-stats strong,
-.level-commission strong{
+.level-stats p{
+font-size:12px;
+margin:0;
+opacity:.9;
+}
+
+.level-stats strong{
 font-size:14px;
 }
 
+/* COMMISSION */
+
+.level-commission{
+text-align:right;
+}
+
+.level-commission p{
+font-size:12px;
+margin:0;
+opacity:.9;
+}
+
+.level-commission strong{
+font-size:15px;
+}
 
 /* DETAILS BUTTON */
 
@@ -1195,9 +1344,25 @@ padding:6px 14px;
 border-radius:20px;
 font-size:12px;
 text-decoration:none;
-margin-left:10px;
+margin-left:12px;
+white-space:nowrap;
 }
 
+/* ================= MOBILE FIX ================= */
+
+@media (max-width:600px){
+
+.level-panel{
+flex-direction:column;
+align-items:flex-start;
+gap:8px;
+}
+
+.level-commission{
+text-align:left;
+}
+
+}
     
 
     
