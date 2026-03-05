@@ -61,30 +61,41 @@ $query = $pdo->query("SELECT title FROM news ORDER BY id DESC");
 
     <div class="dashboard-actions">
 
-        <a href="#" class="action-item">
-            <div class="icon-circle"><i class="fa-solid fa-money-bill-wave"></i></div>
+        <!-- Recharge -->
+        <a href="recharge.php" class="action-item">
+            <div class="icon-circle">
+                <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
             <span>Recharge</span>
         </a>
 
-        <a href="#" class="action-item">
-            <div class="icon-circle"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+        <!-- Withdraw -->
+        <a href="withdraw.php" class="action-item">
+            <div class="icon-circle">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </div>
             <span>Withdraw</span>
         </a>
 
-        <a href="#" class="action-item">
-            <div class="icon-circle"><i class="fa-solid fa-mobile-screen"></i></div>
+        <!-- App Download -->
+        <a href="app.php" class="action-item">
+            <div class="icon-circle">
+                <i class="fa-solid fa-mobile-screen"></i>
+            </div>
             <span>App</span>
         </a>
 
-        <a href="#" class="action-item">
-            <div class="icon-circle"><i class="fa-solid fa-building"></i></div>
+        <!-- Company -->
+        <a href="company.php" class="action-item">
+            <div class="icon-circle">
+                <i class="fa-solid fa-building"></i>
+            </div>
             <span>Company Profile</span>
         </a>
 
     </div>
 
 </div>
-
 <!-- ================= BANNER ================= -->
 
 <div class="banner-slider">
