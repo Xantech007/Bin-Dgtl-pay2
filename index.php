@@ -109,7 +109,7 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status = 1 ORDER BY id ASC");
 
 <div class="task-left">
 
-<img src="assets/images/vip.jpeg" class="vip-icon">
+<img src="assets/images/vip.jpg" class="vip-icon">
 
 <?php if($user['vip_level'] < $vip['id']): ?>
 <i class="fa-solid fa-lock lock-overlay"></i>
