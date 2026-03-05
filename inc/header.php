@@ -83,7 +83,7 @@ body{
 .news-wrapper{
 display:flex;
 align-items:center;
-background:#fff;
+background:#333;
 padding:10px 0;
 overflow:hidden;
 border-bottom:1px solid #ddd;
@@ -92,7 +92,7 @@ border-bottom:1px solid #ddd;
 .news-icon{
 padding:0 15px;
 font-size:16px;
-color:#333;
+color:#fff;
 }
 
 .news-marquee{
@@ -110,7 +110,7 @@ animation:scroll-left 20s linear infinite;
 .news-item{
 margin-right:50px;
 font-weight:500;
-color:#333;
+color:#fff;
 }
 
 @keyframes scroll-left{
