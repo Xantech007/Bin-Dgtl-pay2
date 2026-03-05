@@ -34,7 +34,6 @@ exit;
 }else{
 $error="Invalid login credentials";
 }
-
 }
 ?>
 <!DOCTYPE html>
@@ -70,34 +69,7 @@ padding:30px;
 background:#14161c;
 border-radius:20px;
 padding:50px 40px;
-position:relative;
-overflow:hidden;
 box-shadow:0 0 40px rgba(0,0,0,.6);
-}
-
-/* floating image */
-
-.bg{
-position:absolute;
-right:-40px;
-bottom:-20px;
-width:340px;
-opacity:.25;
-animation:float 4s ease-in-out infinite;
-pointer-events:none;
-z-index:0;
-}
-
-@keyframes float{
-0%,100%{transform:translateY(0)}
-50%{transform:translateY(-20px)}
-}
-
-/* content above image */
-
-.box > *{
-position:relative;
-z-index:1;
 }
 
 .logo{
@@ -200,8 +172,6 @@ margin-top:10px;
 <div class="wrapper">
 <div class="box">
 
-<img src="assets/images/wallet.png" class="bg">
-
 <img src="assets/images/logo.webp" class="logo">
 
 <div class="title">BINANCE DIGITAL</div>
@@ -228,7 +198,7 @@ margin-top:10px;
 <button type="submit" class="btn signin">Sign In</button>
 
 <button type="button" class="btn signup"
-onclick="window.location.href='register.php'">
+onclick="location.href='register.php'">
 Create Account
 </button>
 
@@ -251,7 +221,7 @@ Create Account
 <button type="submit" class="btn signin">Sign In</button>
 
 <button type="button" class="btn signup"
-onclick="window.location.href='register.php'">
+onclick="location.href='register.php'">
 Create Account
 </button>
 
