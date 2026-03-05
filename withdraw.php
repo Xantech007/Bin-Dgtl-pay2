@@ -78,7 +78,9 @@ exit;
 <?php include "inc/header.php"; ?>
 
 <div class="withdraw-header">
-<a href="index.php"><i class="fa fa-arrow-left"></i></a>
+<a href="#" onclick="goBack()">
+<i class="fa fa-arrow-left"></i>
+</a>
 <span>Withdraw</span>
 </div>
 
