@@ -53,7 +53,9 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
 
         $stmt->execute([$user_id,$method_id,$target_file]);
 
-        $msg="Recharge submitted successfully";
+        $_SESSION['recharge_msg'] = "Recharge submitted successfully";
+        header("Location: index.php");
+        exit;
     }
 }
 ?>
