@@ -83,10 +83,10 @@ body{
 .news-wrapper{
 display:flex;
 align-items:center;
-background:#000;
+background:#111;
 padding:10px 0;
 overflow:hidden;
-border-bottom:1px solid #000;
+border-bottom:1px solid #111;
 }
 
 .news-icon{
