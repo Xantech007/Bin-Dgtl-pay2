@@ -1538,6 +1538,51 @@ align-items:center;
 width:48px;
 }
 
+/* ================= VIP INNER CONTAINER ================= */
+
+.vip-details{
+background:rgba(0,0,0,0.25);
+padding:12px 16px;
+border-radius:10px;
+flex:1;
+display:grid;
+grid-template-columns:1fr auto;
+row-gap:8px;
+align-items:center;
+}
+
+
+/* LEFT COLUMN (LABELS) */
+
+.vip-details .label{
+opacity:.85;
+font-size:13px;
+}
+
+
+/* RIGHT COLUMN (VALUES) */
+
+.vip-details .value{
+text-align:right;
+font-weight:600;
+font-size:13px;
+}
+
+
+/* PROFIT GREEN */
+
+.vip-details .green{
+color:#00e676;
+}
+
+
+/* USDT COLOR */
+
+.usdt{
+color:#a0a0a0;
+font-weight:500;
+margin-left:3px;
+}
 
 /* ================= INFO SECTION ================= */
 
