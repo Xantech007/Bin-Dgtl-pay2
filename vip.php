@@ -1,17 +1,15 @@
 <?php
 session_start();
+require_once "config/database.php";
 
 if(!isset($_SESSION['user_id'])){
 header("Location: login.php");
 exit;
 }
 
-require_once "config/database.php";
-
 $user_id = $_SESSION['user_id'];
 
-/* USER INFO */
-
+/* FETCH USER */
 $stmt = $pdo->prepare("SELECT balance,vip_level FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,16 +17,15 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $balance = $user['balance'];
 $current_vip = $user['vip_level'];
 
-$msg="";
+$msg = "";
 
+/* HANDLE VIP ACTIVATION */
 
-/* ACTIVATE VIP */
-
-if(isset($_POST['vip_id'])){
+if(isset($_POST['activate_vip'])){
 
 $vip_id = $_POST['vip_id'];
 
-$stmt = $pdo->prepare("SELECT activation_fee FROM vip WHERE id=?");
+$stmt = $pdo->prepare("SELECT * FROM vip WHERE id=?");
 $stmt->execute([$vip_id]);
 $vip = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -39,58 +36,53 @@ if($balance < $fee){
 header("Location: recharge.php");
 exit;
 
-}else{
+}
+
+/* UPDATE USER */
 
 $new_balance = $balance - $fee;
 
-$stmt = $pdo->prepare("UPDATE users SET balance=?, vip_level=? WHERE id=?");
-$stmt->execute([$new_balance,$vip_id,$user_id]);
+$update = $pdo->prepare("UPDATE users SET balance=?, vip_level=? WHERE id=?");
+$update->execute([$new_balance,$vip_id,$user_id]);
 
-$msg="VIP activated successfully";
+$_SESSION['vip_msg'] = "VIP".$vip_id." activated successfully";
 
-$balance = $new_balance;
-$current_vip = $vip_id;
-
-}
+header("Location: vip.php");
+exit;
 
 }
 
-
-/* FETCH VIP PLANS */
-
-$vipQuery = $pdo->query("SELECT * FROM vip WHERE status=1 ORDER BY id ASC");
+$vipQuery = $pdo->query("SELECT * FROM vip ORDER BY id ASC");
 
 ?>
 
 <?php include "inc/header.php"; ?>
 
-
 <div class="vip-container">
 
-<?php if($msg): ?>
+<?php if(isset($_SESSION['vip_msg'])): ?>
 
 <div class="vip-success">
-<?php echo $msg; ?>
+<?php
+echo $_SESSION['vip_msg'];
+unset($_SESSION['vip_msg']);
+?>
 </div>
 
 <?php endif; ?>
 
 
-<?php while($vip=$vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
+<?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
 
 <div class="vip-card">
 
 <div class="vip-label">
-<?php echo $vip['name']; ?>
+VIP<?php echo $vip['id']; ?>
 </div>
-
 
 <div class="vip-left">
-
-<img src="assets/images/logo-vip.png">
-
+<img src="assets/images/vip.jpg">
 </div>
-
 
 <div class="vip-details">
 
@@ -98,19 +90,24 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status=1 ORDER BY id ASC");
 <div class="value">1</div>
 
 <div class="label">Simple interest</div>
-<div class="value green">3.00</div>
+<div class="value green">
+<?php echo number_format($vip['daily_profit'],2); ?>
+</div>
 
 <div class="label">Daily profit</div>
 <div class="value">
-3.00 <span class="usdt">USDT</span>
+<?php echo number_format($vip['daily_profit'],2); ?>
+<span class="usdt">USDT</span>
 </div>
 
 <div class="label">The total profit</div>
 <div class="value">
-270.00 <span class="usdt">USDT</span>
+<?php echo number_format($vip['total_profit'],2); ?>
+<span class="usdt">USDT</span>
 </div>
 
 </div>
+
 
 <div class="vip-action">
 
@@ -122,8 +119,9 @@ Activated
 
 <?php else: ?>
 
-<button onclick="openConfirm(<?php echo $vip['id'];?>,<?php echo $vip['activation_fee'];?>)">
-<?php echo number_format($vip['activation_fee'],2); ?> USDT Unlock now
+<button onclick="openPopup(<?php echo $vip['id']; ?>)">
+<?php echo number_format($vip['activation_fee'],2); ?> USDT
+Unlock now
 </button>
 
 <?php endif; ?>
@@ -137,7 +135,7 @@ Activated
 </div>
 
 
-<!-- CONFIRM POPUP -->
+<!-- POPUP -->
 
 <div class="vip-popup" id="vipPopup">
 
@@ -149,11 +147,11 @@ Activated
 
 <input type="hidden" name="vip_id" id="vip_id">
 
-<button type="submit" class="confirm-btn">
+<button type="submit" name="activate_vip" class="confirm-btn">
 Confirm
 </button>
 
-<button type="button" onclick="closePopup()" class="cancel-btn">
+<button type="button" class="cancel-btn" onclick="closePopup()">
 Cancel
 </button>
 
@@ -164,12 +162,15 @@ Cancel
 </div>
 
 
+<?php include "inc/footer.php"; ?>
+
+
 <script>
 
-function openConfirm(id,fee){
+function openPopup(id){
 
-document.getElementById("vip_id").value=id;
 document.getElementById("vipPopup").style.display="flex";
+document.getElementById("vip_id").value=id;
 
 }
 
@@ -180,6 +181,3 @@ document.getElementById("vipPopup").style.display="none";
 }
 
 </script>
-
-
-<?php include "inc/footer.php"; ?>
