@@ -1364,7 +1364,52 @@ text-align:left;
 
 }
     
+.team-detail{
+margin:20px;
+}
 
+.team-header{
+display:flex;
+align-items:center;
+margin-bottom:20px;
+}
+
+.team-header span{
+flex:1;
+text-align:center;
+font-size:18px;
+}
+
+.team-header a{
+color:white;
+text-decoration:none;
+}
+
+.team-member{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:15px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.member-info{
+font-size:13px;
+opacity:.9;
+}
+
+.member-date{
+font-size:12px;
+opacity:.7;
+}
+
+.team-empty{
+text-align:center;
+padding:40px;
+opacity:.7;
+}
+
+
+    
     
 </style>
 </head>
