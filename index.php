@@ -35,6 +35,17 @@ unset($_SESSION['recharge_msg']);
 ?>
 </div>
 
+<?php if(isset($_SESSION['withdraw_msg'])): ?>
+
+<div class="withdraw-success">
+<?php 
+echo $_SESSION['withdraw_msg'];
+unset($_SESSION['withdraw_msg']);
+?>
+</div>
+
+<?php endif; ?>
+
 <?php endif; ?>
 
 <!-- Scrolling News Section -->
