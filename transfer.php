@@ -9,19 +9,14 @@ exit;
 
 $user_id = $_SESSION['user_id'];
 
-/* GET USER DATA */
+/* FETCH USER */
 
-$stmt = $pdo->prepare("
-SELECT balance,withdrawal_balance,password
-FROM users
-WHERE id=?
-");
-
+$stmt=$pdo->prepare("SELECT balance,withdrawal_balance,password FROM users WHERE id=?");
 $stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user=$stmt->fetch(PDO::FETCH_ASSOC);
 
-$basic = $user['balance'];
-$withdraw = $user['withdrawal_balance'];
+$basic=$user['balance'];
+$withdraw=$user['withdrawal_balance'];
 
 $msg="";
 
@@ -29,27 +24,28 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
 
 $amount=floatval($_POST['amount']);
 $password=$_POST['password'];
-$direction=$_POST['direction'];
-
-/* PASSWORD CHECK */
+$from=$_POST['from_account'];
+$to=$_POST['to_account'];
 
 if(!password_verify($password,$user['password'])){
-
 $msg="Incorrect password";
+}
 
-}elseif($amount<=0){
-
+elseif($amount<=0){
 $msg="Invalid amount";
+}
 
+else{
+
+/* CHECK SOURCE BALANCE */
+
+$source_balance = ($from=="basic") ? $basic : $withdraw;
+
+if($amount>$source_balance){
+$msg="Insufficient balance";
 }else{
 
-if($direction=="basic_to_withdraw"){
-
-if($amount>$basic){
-
-$msg="Insufficient Basic balance";
-
-}else{
+if($from=="basic"){
 
 $pdo->prepare("
 UPDATE users
@@ -58,20 +54,9 @@ withdrawal_balance=withdrawal_balance+?
 WHERE id=?
 ")->execute([$amount,$amount,$user_id]);
 
-$_SESSION['transfer_msg']="Transferred to Withdrawal account";
-
-header("Location: transfer.php");
-exit;
-
 }
 
-}else{
-
-if($amount>$withdraw){
-
-$msg="Insufficient Withdrawal balance";
-
-}else{
+else{
 
 $pdo->prepare("
 UPDATE users
@@ -80,12 +65,11 @@ balance=balance+?
 WHERE id=?
 ")->execute([$amount,$amount,$user_id]);
 
-$_SESSION['transfer_msg']="Transferred to Basic account";
+}
 
+$_SESSION['transfer_msg']="Transfer completed successfully";
 header("Location: transfer.php");
 exit;
-
-}
 
 }
 
@@ -127,12 +111,10 @@ unset($_SESSION['transfer_msg']);
 
 <div class="transfer-balance">
 
-<div class="transfer-box" id="withdrawBox">
+<div class="transfer-box" id="leftBox">
 
-<p>Withdrawal account</p>
-<h3 id="withdrawBalance">
-<?php echo number_format($withdraw,2); ?>
-</h3>
+<p id="leftLabel">Withdrawal account</p>
+<h3 id="leftBalance"><?php echo number_format($withdraw,2); ?></h3>
 
 </div>
 
@@ -142,12 +124,10 @@ unset($_SESSION['transfer_msg']);
 </div>
 
 
-<div class="transfer-box" id="basicBox">
+<div class="transfer-box" id="rightBox">
 
-<p>Basic account</p>
-<h3 id="basicBalance">
-<?php echo number_format($basic,2); ?>
-</h3>
+<p id="rightLabel">Basic account</p>
+<h3 id="rightBalance"><?php echo number_format($basic,2); ?></h3>
 
 </div>
 
@@ -161,7 +141,8 @@ unset($_SESSION['transfer_msg']);
 
 <form method="POST">
 
-<input type="hidden" name="direction" id="direction" value="basic_to_withdraw">
+<input type="hidden" name="from_account" id="from_account" value="withdraw">
+<input type="hidden" name="to_account" id="to_account" value="basic">
 
 <input
 type="number"
@@ -211,62 +192,68 @@ Confirm
 
 <script>
 
-function goBack(){
+/* BACK BUTTON */
 
+function goBack(){
 if(document.referrer){
 window.history.back();
 }else{
 window.location.href="index.php";
 }
-
 }
 
 
-/* PASSWORD SHOW */
+/* PASSWORD TOGGLE */
 
 document.querySelector(".toggle-pass").onclick=function(){
-
 let input=document.querySelector("input[name='password']");
-
 input.type=input.type==="password"?"text":"password";
-
 }
 
 
-/* SWAP DIRECTION */
+/* SWAP LOGIC */
 
-let direction="basic_to_withdraw";
+let left="withdraw";
+let right="basic";
 
 document.getElementById("swapBtn").onclick=function(){
 
-const basicBox=document.getElementById("basicBox");
-const withdrawBox=document.getElementById("withdrawBox");
+const leftLabel=document.getElementById("leftLabel");
+const rightLabel=document.getElementById("rightLabel");
 
-const basicBalance=document.getElementById("basicBalance").innerText;
-const withdrawBalance=document.getElementById("withdrawBalance").innerText;
+const leftBalance=document.getElementById("leftBalance");
+const rightBalance=document.getElementById("rightBalance");
 
 /* animation */
 
-basicBox.classList.add("swap-anim");
-withdrawBox.classList.add("swap-anim");
+leftBalance.classList.add("swap-anim");
+rightBalance.classList.add("swap-anim");
 
 setTimeout(()=>{
 
-document.getElementById("basicBalance").innerText=withdrawBalance;
-document.getElementById("withdrawBalance").innerText=basicBalance;
+let tempLabel=leftLabel.innerText;
+leftLabel.innerText=rightLabel.innerText;
+rightLabel.innerText=tempLabel;
 
-basicBox.classList.remove("swap-anim");
-withdrawBox.classList.remove("swap-anim");
+let tempBalance=leftBalance.innerText;
+leftBalance.innerText=rightBalance.innerText;
+rightBalance.innerText=tempBalance;
 
-},300);
+/* swap variables */
 
-/* change direction */
+let temp=left;
+left=right;
+right=temp;
 
-direction = direction === "basic_to_withdraw"
-? "withdraw_to_basic"
-: "basic_to_withdraw";
+/* update form */
 
-document.getElementById("direction").value=direction;
+document.getElementById("from_account").value=left;
+document.getElementById("to_account").value=right;
+
+leftBalance.classList.remove("swap-anim");
+rightBalance.classList.remove("swap-anim");
+
+},250);
 
 }
 
