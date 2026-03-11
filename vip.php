@@ -139,7 +139,7 @@ VIP<?php echo $vip['id']; ?>
 <?php if($isActive): ?>
 
 <div class="vip-status">
-<i class="fa fa-lock"></i> Unlock:Effective
+<i class="fa fa-unlock"></i> Unlock:Effective
 </div>
 
 <?php endif; ?>
