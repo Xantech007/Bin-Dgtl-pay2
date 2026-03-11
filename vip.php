@@ -18,33 +18,24 @@ $user=$stmt->fetch(PDO::FETCH_ASSOC);
 $balance=$user['balance'];
 
 
-/* GET ACTIVE VIP */
+/* AUTO EXPIRE ALL VIPs */
+
+$pdo->prepare("
+UPDATE user_vip
+SET status=0
+WHERE end_time <= NOW()
+")->execute();
+
+
+/* GET ACTIVE VIPs */
 
 $stmt=$pdo->prepare("
 SELECT * FROM user_vip
 WHERE user_id=? AND status=1
-ORDER BY vip_id DESC
-LIMIT 1
 ");
 
 $stmt->execute([$user_id]);
-$active_vip=$stmt->fetch(PDO::FETCH_ASSOC);
-
-
-/* AUTO EXPIRE */
-
-if($active_vip){
-
-if(strtotime($active_vip['end_time']) < time()){
-
-$pdo->prepare("UPDATE user_vip SET status=0 WHERE id=?")
-->execute([$active_vip['id']]);
-
-$active_vip=null;
-
-}
-
-}
+$active_vips=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 /* ACTIVATE VIP */
@@ -67,10 +58,10 @@ exit;
 
 }
 
-/* START TIME */
+/* START TIME (+5 HOURS) */
 
-$start=date("Y-m-d H:i:s");
-$end=date("Y-m-d H:i:s",strtotime("+$duration days"));
+$start=date("Y-m-d H:i:s",strtotime("+5 hours"));
+$end=date("Y-m-d H:i:s",strtotime("+$duration days +5 hours"));
 
 /* DEDUCT BALANCE */
 
@@ -82,8 +73,8 @@ $pdo->prepare("UPDATE users SET balance=? WHERE id=?")
 /* SAVE VIP */
 
 $pdo->prepare("
-INSERT INTO user_vip (user_id,vip_id,start_time,end_time)
-VALUES (?,?,?,?)
+INSERT INTO user_vip (user_id,vip_id,start_time,end_time,status)
+VALUES (?,?,?,?,1)
 ")->execute([$user_id,$vip_id,$start,$end]);
 
 $_SESSION['vip_msg']="VIP $vip_id activated";
@@ -122,7 +113,22 @@ unset($_SESSION['vip_msg']);
 <?php while($vip=$vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
 
 <?php
-$isActive = $active_vip && $active_vip['vip_id']==$vip['id'];
+
+$isActive=false;
+$vipData=null;
+
+foreach($active_vips as $a){
+
+if($a['vip_id']==$vip['id']){
+
+$isActive=true;
+$vipData=$a;
+break;
+
+}
+
+}
+
 ?>
 
 <div class="vip-card">
@@ -187,11 +193,11 @@ VIP<?php echo $vip['id']; ?>
 
 Effective time:
 
-<?php echo date("d/m/Y H:i:s",strtotime($active_vip['start_time'])); ?>
+<?php echo date("d/m/Y H:i:s",strtotime($vipData['start_time'])); ?>
 
 -
 
-<?php echo date("d/m/Y H:i:s",strtotime($active_vip['end_time'])); ?>
+<?php echo date("d/m/Y H:i:s",strtotime($vipData['end_time'])); ?>
 
 </div>
 
