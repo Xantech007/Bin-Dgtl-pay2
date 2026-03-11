@@ -1617,6 +1617,30 @@ border-radius:20px;
 color:#fff;
 cursor:pointer;
 }
+
+/* VIP STATUS TOP RIGHT */
+
+.vip-status{
+position:absolute;
+top:0;
+right:0;
+background:#bfbfbf;
+color:#000;
+padding:4px 12px;
+font-size:12px;
+font-weight:bold;
+border-radius:0 0 0 10px;
+display:flex;
+align-items:center;
+gap:5px;
+}
+
+.vip-status i{
+font-size:11px;
+}
+
+
+
 /* ================= MINE PAGE ================= */
 
 .mine-wrapper{
