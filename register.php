@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "config/database.php";
+require_once "inc/countries.php";
 
 if(isset($_SESSION['user_id'])){
 header("Location: index.php");
@@ -9,12 +10,29 @@ exit;
 
 $msg="";
 
+/* Detect user country from IP */
+function getUserCountry(){
+
+$ip=$_SERVER['REMOTE_ADDR'];
+
+$api=@json_decode(file_get_contents("http://ip-api.com/json/".$ip));
+
+if($api && $api->status=="success"){
+return $api->country;
+}
+
+return "";
+}
+
+$user_country=getUserCountry();
+
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
 $type=$_POST['type'];
 $password=$_POST['password'];
 $confirm=$_POST['confirm'];
 $invite=$_POST['invite'];
+$country=$_POST['country'];
 
 if($password!=$confirm){
 
@@ -36,11 +54,11 @@ $msg="Email already exists";
 }else{
 
 $stmt=$pdo->prepare(
-"INSERT INTO users(email,password,invite_code,vip_level,balance)
-VALUES(?,?,?,?,?)"
+"INSERT INTO users(email,password,invite_code,country,vip_level,balance)
+VALUES(?,?,?,?,?,?)"
 );
 
-$stmt->execute([$email,$hash,$invite,0,0]);
+$stmt->execute([$email,$hash,$invite,$country,0,0]);
 
 header("Location: login.php");
 exit;
@@ -58,11 +76,11 @@ $msg="Phone already exists";
 }else{
 
 $stmt=$pdo->prepare(
-"INSERT INTO users(phone,password,invite_code,vip_level,balance)
-VALUES(?,?,?,?,?)"
+"INSERT INTO users(phone,password,invite_code,country,vip_level,balance)
+VALUES(?,?,?,?,?,?)"
 );
 
-$stmt->execute([$phone,$hash,$invite,0,0]);
+$stmt->execute([$phone,$hash,$invite,$country,0,0]);
 
 header("Location: login.php");
 exit;
@@ -84,8 +102,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 <title>Register</title>
 
 <style>
-
-/* SAME STYLE AS LOGIN */
 
 body{
 margin:0;
@@ -158,13 +174,18 @@ color:white;
 margin-right:10px;
 }
 
-.input input{
+.input input,
+.input select{
 border:none;
 background:transparent;
 outline:none;
 color:white;
 flex:1;
 font-size:16px;
+}
+
+select option{
+color:black;
 }
 
 .btn{
@@ -230,6 +251,26 @@ margin-top:10px;
 </div>
 
 <div class="input">
+<i class="fa fa-globe"></i>
+
+<select name="country" required>
+
+<option value="">Select Country</option>
+
+<?php
+foreach($countries as $country){
+
+$selected=($country==$user_country)?"selected":"";
+
+echo "<option value=\"$country\" $selected>$country</option>";
+}
+?>
+
+</select>
+
+</div>
+
+<div class="input">
 <i class="fa fa-lock"></i>
 <input type="password" name="password" placeholder="Password" required>
 </div>
@@ -262,6 +303,26 @@ Sign In
 <div class="input">
 <i class="fa fa-phone"></i>
 <input type="text" name="phone" placeholder="Phone Number" required>
+</div>
+
+<div class="input">
+<i class="fa fa-globe"></i>
+
+<select name="country" required>
+
+<option value="">Select Country</option>
+
+<?php
+foreach($countries as $country){
+
+$selected=($country==$user_country)?"selected":"";
+
+echo "<option value=\"$country\" $selected>$country</option>";
+}
+?>
+
+</select>
+
 </div>
 
 <div class="input">
