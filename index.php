@@ -48,8 +48,9 @@ $reset_time = strtotime($new_reset);
 
 }
 
-<?php include "inc/header.php"; ?>
+?>
 
+<?php include "inc/header.php"; ?>
 
 <?php if(isset($_SESSION['recharge_msg'])): ?>
 
