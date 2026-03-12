@@ -5,86 +5,132 @@ require_once __DIR__ . '/inc/header.php';
 $message = '';
 $error   = '';
 
+$upload_dir = __DIR__ . '/../../assets/images/qr/';
+$upload_url_prefix = 'assets/images/qr/';   // path saved in DB
+
+// Ensure upload directory exists
+if (!is_dir($upload_dir)) {
+    mkdir($upload_dir, 0755, true);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     try {
-        if ($action === 'add' || $action === 'edit') {
-            $name           = trim($_POST['name'] ?? '');
-            $wallet_address = trim($_POST['wallet_address'] ?? '');
-            $qr_image       = trim($_POST['qr_image'] ?? '');
-            $status         = (int)($_POST['status'] ?? 1);
-            $withdrawal_fee = (float)($_POST['withdrawal_fee'] ?? 0.00);
+        $name           = trim($_POST['name'] ?? '');
+        $wallet_address = trim($_POST['wallet_address'] ?? '');
+        $status         = (int)($_POST['status'] ?? 1);
+        $withdrawal_fee = (float)($_POST['withdrawal_fee'] ?? 0.00);
+        $qr_image_path  = trim($_POST['current_qr_image'] ?? ''); // for edit - keep old if no new upload
 
-            if (empty($name)) {
-                throw new Exception("Payment method name is required.");
+        if (empty($name)) {
+            throw new Exception("Payment method name is required.");
+        }
+
+        // ───────────────────────────────────────────────
+        // Handle QR image upload
+        // ───────────────────────────────────────────────
+        if (!empty($_FILES['qr_image']['name'])) {
+            $file = $_FILES['qr_image'];
+            $allowed = ['jpg','jpeg','png','webp','gif'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowed)) {
+                throw new Exception("Only JPG, JPEG, PNG, WEBP, GIF files are allowed.");
+            }
+            if ($file['size'] > 2 * 1024 * 1024) { // 2MB
+                throw new Exception("File size must be less than 2MB.");
             }
 
-            $data = [
-                $name,
-                $wallet_address,
-                $qr_image,
-                $status,
-                $withdrawal_fee
-            ];
+            // Clean and unique filename
+            $safe_name = preg_replace('/[^a-z0-9-]/i', '-', pathinfo($file['name'], PATHINFO_FILENAME));
+            $new_filename = $safe_name . '-' . date('Ymd-His') . '.' . $ext;
+            $target_path = $upload_dir . $new_filename;
 
-            if ($action === 'add') {
-                $stmt = $pdo->prepare("
-                    INSERT INTO payment_methods 
-                    (name, wallet_address, qr_image, status, withdrawal_fee)
-                    VALUES (?, ?, ?, ?, ?)
-                ");
-                $stmt->execute($data);
-                $message = "Payment method added successfully.";
-            } 
-            else if ($action === 'edit') {
-                $id = (int)($_POST['id'] ?? 0);
-                if ($id <= 0) throw new Exception("Invalid method ID.");
-
-                $data[] = $id;
-
-                $stmt = $pdo->prepare("
-                    UPDATE payment_methods SET
-                        name            = ?,
-                        wallet_address  = ?,
-                        qr_image        = ?,
-                        status          = ?,
-                        withdrawal_fee  = ?
-                    WHERE id = ?
-                ");
-                $stmt->execute($data);
-                $message = "Payment method updated successfully.";
+            if (!move_uploaded_file($file['tmp_name'], $target_path)) {
+                throw new Exception("Failed to upload QR image.");
             }
+
+            $qr_image_path = $upload_url_prefix . $new_filename;
+        }
+
+        $data = [
+            $name,
+            $wallet_address,
+            $qr_image_path,
+            $status,
+            $withdrawal_fee
+        ];
+
+        if ($action === 'add') {
+            $stmt = $pdo->prepare("
+                INSERT INTO payment_methods 
+                (name, wallet_address, qr_image, status, withdrawal_fee)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmt->execute($data);
+            $message = "Payment method added successfully.";
         } 
-        else if ($action === 'delete') {
+        else if ($action === 'edit') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id <= 0) throw new Exception("Invalid method ID.");
 
-            // Optional: prevent deletion if used in deposits
-            $check = $pdo->prepare("SELECT COUNT(*) FROM deposits WHERE method_id = ?");
-            $check->execute([$id]);
-            if ($check->fetchColumn() > 0) {
-                throw new Exception("Cannot delete: This method is used in some deposits.");
-            }
+            $data[] = $id;
 
-            $stmt = $pdo->prepare("DELETE FROM payment_methods WHERE id = ?");
-            $stmt->execute([$id]);
-            $message = "Payment method deleted successfully.";
+            $stmt = $pdo->prepare("
+                UPDATE payment_methods SET
+                    name            = ?,
+                    wallet_address  = ?,
+                    qr_image        = ?,
+                    status          = ?,
+                    withdrawal_fee  = ?
+                WHERE id = ?
+            ");
+            $stmt->execute($data);
+            $message = "Payment method updated successfully.";
         }
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
 }
 
-// Load all payment methods
+// ───────────────────────────────────────────────
+// Delete action
+// ───────────────────────────────────────────────
+if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $id = (int)($_POST['id'] ?? 0);
+    try {
+        if ($id <= 0) throw new Exception("Invalid ID");
+
+        $check = $pdo->prepare("SELECT COUNT(*) FROM deposits WHERE method_id = ?");
+        $check->execute([$id]);
+        if ($check->fetchColumn() > 0) {
+            throw new Exception("Cannot delete: method is used in deposits.");
+        }
+
+        // Optional: delete old QR image file
+        $stmt = $pdo->prepare("SELECT qr_image FROM payment_methods WHERE id = ?");
+        $stmt->execute([$id]);
+        $old_qr = $stmt->fetchColumn();
+        if ($old_qr && file_exists(__DIR__ . '/../../' . $old_qr)) {
+            @unlink(__DIR__ . '/../../' . $old_qr);
+        }
+
+        $stmt = $pdo->prepare("DELETE FROM payment_methods WHERE id = ?");
+        $stmt->execute([$id]);
+
+        $message = "Payment method deleted.";
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+
+// Load all methods
 try {
-    $stmt = $pdo->query("
-        SELECT * FROM payment_methods 
-        ORDER BY id DESC
-    ");
+    $stmt = $pdo->query("SELECT * FROM payment_methods ORDER BY id DESC");
     $methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Failed to load payment methods: " . $e->getMessage();
+    $error = "Failed to load methods: " . $e->getMessage();
     $methods = [];
 }
 ?>
@@ -104,29 +150,29 @@ try {
     </div>
   <?php endif; ?>
 
-  <!-- ADD NEW METHOD FORM -->
+  <!-- ADD FORM -->
   <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:3rem; max-width:900px; margin-left:auto; margin-right:auto;">
     <h2 style="margin-bottom:1.8rem; text-align:center;">Add New Payment Method</h2>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       <input type="hidden" name="action" value="add">
 
       <div style="margin-bottom:1.4rem;">
         <label style="display:block; margin-bottom:0.5rem;">Method Name *</label>
-        <input type="text" name="name" required placeholder="e.g. USDT TRC20, Bitcoin, Bank Transfer" 
+        <input type="text" name="name" required placeholder="USDT TRC20, Bitcoin, ..." 
                style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="margin-bottom:1.4rem;">
-        <label style="display:block; margin-bottom:0.5rem;">Wallet Address / Account Details</label>
-        <input type="text" name="wallet_address" placeholder="Wallet address or bank account number"
+        <label style="display:block; margin-bottom:0.5rem;">Wallet Address / IBAN</label>
+        <input type="text" name="wallet_address" placeholder="T... or bank account"
                style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="margin-bottom:1.4rem;">
-        <label style="display:block; margin-bottom:0.5rem;">QR Code Image Path (optional)</label>
-        <input type="text" name="qr_image" placeholder="assets/images/qr/usdt-qr.png"
-               style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+        <label style="display:block; margin-bottom:0.5rem;">QR Code Image (jpg/png/webp/gif, max 2MB)</label>
+        <input type="file" name="qr_image" accept="image/*" 
+               style="width:100%; padding:0.6rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="margin-bottom:1.4rem;">
@@ -149,26 +195,21 @@ try {
     </form>
   </div>
 
-  <!-- LIST OF METHODS -->
-  <h2 style="text-align:center; margin:3rem 0 1.5rem;">Existing Payment Methods</h2>
+  <!-- LIST -->
+  <h2 style="text-align:center; margin:3rem 0 1.5rem;">Payment Methods</h2>
 
   <?php if (empty($methods)): ?>
-    <p style="text-align:center; color:var(--text-muted);">No payment methods found.</p>
+    <p style="text-align:center; color:var(--text-muted);">No payment methods yet.</p>
   <?php else: ?>
   <div style="overflow-x:auto;">
-    <table style="
-      width:100%; 
-      max-width:1100px; 
-      margin:0 auto 3rem; 
-      border-collapse:separate; 
-      border-spacing:0 10px;
-    ">
+    <table style="width:100%; max-width:1100px; margin:0 auto 3rem; border-collapse:separate; border-spacing:0 10px;">
       <thead>
         <tr style="background:#1f2937;">
           <th style="padding:1rem; border-top-left-radius:8px;">ID</th>
           <th style="padding:1rem;">Name</th>
-          <th style="padding:1rem;">Wallet / Address</th>
-          <th style="padding:1rem;">Withdrawal Fee</th>
+          <th style="padding:1rem;">Wallet</th>
+          <th style="padding:1rem;">QR</th>
+          <th style="padding:1rem;">Fee</th>
           <th style="padding:1rem;">Status</th>
           <th style="padding:1rem; border-top-right-radius:8px;">Actions</th>
         </tr>
@@ -181,11 +222,16 @@ try {
           <td style="padding:1.1rem; word-break:break-all; font-size:0.92rem;">
             <?= htmlspecialchars($m['wallet_address'] ?: '—') ?>
           </td>
-          <td style="padding:1.1rem; text-align:right;">
-            $<?= number_format($m['withdrawal_fee'] ?? 0, 2) ?>
-          </td>
           <td style="padding:1.1rem; text-align:center;">
-            <span style="color: <?= $m['status'] ? '#238636' : '#f85149' ?>; font-weight:600;">
+            <?php if ($m['qr_image']): ?>
+              <img src="../<?= htmlspecialchars($m['qr_image']) ?>" alt="QR" style="max-width:80px; border-radius:6px; border:1px solid var(--border);">
+            <?php else: ?>
+              —
+            <?php endif; ?>
+          </td>
+          <td style="padding:1.1rem; text-align:right;">$<?= number_format($m['withdrawal_fee'] ?? 0, 2) ?></td>
+          <td style="padding:1.1rem; text-align:center;">
+            <span style="color:<?= $m['status'] ? '#238636' : '#f85149' ?>; font-weight:600;">
               <?= $m['status'] ? 'Active' : 'Inactive' ?>
             </span>
           </td>
@@ -196,7 +242,7 @@ try {
             </button>
 
             <form method="POST" style="display:inline;" 
-                  onsubmit="return confirm('Delete payment method «<?= htmlspecialchars(addslashes($m['name'])) ?>»?');">
+                  onsubmit="return confirm('Delete «<?= htmlspecialchars(addslashes($m['name'])) ?>»?');">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $m['id'] ?>">
               <button type="submit" class="btn red" style="padding:0.5rem 1rem; font-size:0.9rem;">
@@ -221,9 +267,10 @@ try {
 
       <h2 style="margin-bottom:1.8rem; text-align:center;">Edit Payment Method</h2>
 
-      <form method="POST">
+      <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="id" id="edit_id">
+        <input type="hidden" name="current_qr_image" id="edit_current_qr">
 
         <div style="margin-bottom:1.4rem;">
           <label style="display:block; margin-bottom:0.5rem;">Method Name *</label>
@@ -232,15 +279,17 @@ try {
         </div>
 
         <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Wallet Address / Account</label>
+          <label style="display:block; margin-bottom:0.5rem;">Wallet Address</label>
           <input type="text" name="wallet_address" id="edit_wallet_address" 
                  style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
 
         <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">QR Code Image Path (optional)</label>
-          <input type="text" name="qr_image" id="edit_qr_image" placeholder="assets/images/qr/..."
-                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <label style="display:block; margin-bottom:0.5rem;">Current QR:</label>
+          <div id="current_qr_preview" style="margin:0.5rem 0;"></div>
+          <label style="display:block; margin-bottom:0.5rem;">New QR Code (leave empty to keep current)</label>
+          <input type="file" name="qr_image" accept="image/*" 
+                 style="width:100%; padding:0.6rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
 
         <div style="margin-bottom:1.4rem;">
@@ -267,13 +316,19 @@ try {
 </main>
 
 <script>
-function openEditModal(method) {
-  document.getElementById('edit_id').value              = method.id;
-  document.getElementById('edit_name').value            = method.name;
-  document.getElementById('edit_wallet_address').value  = method.wallet_address || '';
-  document.getElementById('edit_qr_image').value        = method.qr_image || '';
-  document.getElementById('edit_withdrawal_fee').value  = method.withdrawal_fee || '0.00';
-  document.getElementById('edit_status').value          = method.status;
+function openEditModal(m) {
+  document.getElementById('edit_id').value              = m.id;
+  document.getElementById('edit_name').value            = m.name;
+  document.getElementById('edit_wallet_address').value  = m.wallet_address || '';
+  document.getElementById('edit_current_qr').value      = m.qr_image || '';
+  document.getElementById('edit_withdrawal_fee').value  = m.withdrawal_fee || '0.00';
+  document.getElementById('edit_status').value          = m.status;
+
+  // Show current QR preview
+  const preview = document.getElementById('current_qr_preview');
+  preview.innerHTML = m.qr_image 
+    ? `<img src="../${m.qr_image}" alt="Current QR" style="max-width:140px; border-radius:6px; border:1px solid var(--border);">`
+    : '<span style="color:var(--text-muted);">No QR image</span>';
 
   document.getElementById('editModal').style.display = 'flex';
 }
