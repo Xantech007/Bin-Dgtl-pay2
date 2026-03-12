@@ -22,7 +22,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $ref_code = $user['referral_code'];
 
 /* Referral link */
-$ref_link = "https://".$_SERVER['HTTP_HOST']."/register.php?ref=".$ref_code;
+$ref_link = "https://".$_SERVER['HTTP_HOST']."/register.php?invite=".$ref_code;
 
 
 /* TEAM STATS */
