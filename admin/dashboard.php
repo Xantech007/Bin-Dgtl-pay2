@@ -2,29 +2,40 @@
 // admin/dashboard.php
 require_once __DIR__ . '/inc/header.php';
 
-// ────────────────────────────────────────────────
-//   Fetch statistics (adjust table/column names to match your real schema)
-// ────────────────────────────────────────────────
+// Fetch statistics using your REAL table structure
 try {
-    // Total users
+    // 1. Total users
     $stmt = $pdo->query("SELECT COUNT(*) FROM users");
-    $total_users = $stmt->fetchColumn();
+    $total_users = (int) $stmt->fetchColumn();
 
-    // Total deposits (sum of confirmed deposits)
-    $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM deposits WHERE status = 'approved'");
-    $total_deposits = number_format($stmt->fetchColumn(), 2);
+    // 2. Total deposits – only approved (assuming status = 1 means approved)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM deposits WHERE status = 1");
+    $total_deposits = number_format((float) $stmt->fetchColumn(), 2);
 
-    // Total withdrawals (sum of approved withdrawals)
-    $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM withdrawals WHERE status = 'approved'");
-    $total_withdrawals = number_format($stmt->fetchColumn(), 2);
+    // 3. Total withdrawals – only approved (assuming status = 1 means approved/paid)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM withdrawals WHERE status = 1");
+    $total_withdrawals = number_format((float) $stmt->fetchColumn(), 2);
 
-    // Number of VIP users (adjust condition to your logic)
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE is_vip = 1 OR plan = 'vip' OR level >= 3"); // ← customize
-    $total_vips = $stmt->fetchColumn();
+    // 4. Number of active VIPs
+    // Count users who currently have at least one active VIP record
+    $stmt = $pdo->query("
+        SELECT COUNT(DISTINCT u.id)
+        FROM users u
+        INNER JOIN user_vip uv ON u.id = uv.user_id
+        WHERE uv.status = 1 
+          AND (uv.end_time IS NULL OR uv.end_time > NOW())
+    ");
+    $total_vips = (int) $stmt->fetchColumn();
 
 } catch (PDOException $e) {
-    // In production: log error
-    $total_users = $total_deposits = $total_withdrawals = $total_vips = "Error";
+    // ─── DEBUG OUTPUT ─── (remove or comment out in production)
+    echo '<div style="background:#f85149; color:white; padding:1.5rem; border-radius:8px; margin:2rem 0; text-align:center; font-family:monospace;">';
+    echo '<strong>Database Query Error:</strong><br>' . htmlspecialchars($e->getMessage()) . '<br>';
+    echo '</div>';
+
+    // Fallback values
+    $total_users = $total_vips = 0;
+    $total_deposits = $total_withdrawals = "0.00";
 }
 ?>
 
@@ -34,7 +45,7 @@ try {
       <div class="card-icon" style="color:#58a6ff;">
         <i class="fas fa-users"></i>
       </div>
-      <div class="card-value"><?= htmlspecialchars($total_users) ?></div>
+      <div class="card-value"><?= number_format($total_users) ?></div>
       <div class="card-label">Total Users</div>
     </div>
 
@@ -58,8 +69,8 @@ try {
       <div class="card-icon" style="color:#d29922;">
         <i class="fas fa-crown"></i>
       </div>
-      <div class="card-value"><?= htmlspecialchars($total_vips) ?></div>
-      <div class="card-label">VIP Members</div>
+      <div class="card-value"><?= number_format($total_vips) ?></div>
+      <div class="card-label">Active VIP Members</div>
     </div>
   </div>
 
