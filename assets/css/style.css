@@ -70,44 +70,55 @@ body{
 }
 
 /* NEWS SECTION */
-
-.news-wrapper{
-display:flex;
-align-items:center;
-background:#111;
-padding:10px 0;
-overflow:hidden;
-border-bottom:1px solid #111;
+.news-wrapper {
+    display: flex;
+    align-items: center;
+    background: #111;
+    padding: 10px 0;
+    overflow: hidden;
+    border-bottom: 1px solid #111;
+    position: relative; /* helps with positioning if needed */
 }
 
-.news-icon{
-padding:0 15px;
-font-size:16px;
-color:#fff;
+.news-icon {
+    padding: 0 15px;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0; /* don't let it shrink */
 }
 
-.news-marquee{
-flex:1;
-overflow:hidden;
-white-space:nowrap;
+.news-marquee {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
 }
 
-.news-content{
-display:inline-block;
-padding-left:100%;
-animation:scroll-left 20s linear infinite;
+.news-content {
+    display: inline-flex;          /* changed to flex for better item control */
+    gap: 50px;                     /* space between news items — adjust this */
+    animation: scroll-left var(--scroll-duration, 35s) linear infinite;
+    will-change: transform;        /* smoother on some browsers */
 }
 
-.news-item{
-margin-right:50px;
-font-weight:500;
-color:#fff;
+/* Each news item */
+.news-item {
+    color: #fff;
+    font-weight: 500;
+    display: inline-block;
+    flex-shrink: 0;
 }
 
-@keyframes scroll-left{
-0%{ transform:translateX(0); }
-100%{ transform:translateX(-100%); }
+/* Keyframes - move exactly half the content width + gap adjustment */
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
+
 /* ================= DASHBOARD ACTION SECTION ================= */
 
 .dashboard-container{
