@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/header.php';
 $message = '';
 $error   = '';
 
-// Handle approve / reject actions
+// Handle approve / reject actions (unchanged)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deposit_id = (int)($_POST['deposit_id'] ?? 0);
     $action     = $_POST['action'] ?? '';
@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            // Get deposit info
             $stmt = $pdo->prepare("SELECT user_id, amount, status FROM deposits WHERE id = ? AND status = 0");
             $stmt->execute([$deposit_id]);
             $deposit = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,17 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($action === 'approve') {
-                // Add to user balance
                 $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
                 $stmt->execute([$deposit['amount'], $deposit['user_id']]);
 
-                // Update deposit status to approved (1)
                 $stmt = $pdo->prepare("UPDATE deposits SET status = 1, updated_at = NOW() WHERE id = ?");
                 $stmt->execute([$deposit_id]);
 
                 $message = "Deposit #{$deposit_id} approved. Amount added to user balance.";
             } else {
-                // Reject → status = 2 (you can change this number)
                 $stmt = $pdo->prepare("UPDATE deposits SET status = 2, updated_at = NOW() WHERE id = ?");
                 $stmt->execute([$deposit_id]);
 
@@ -51,14 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch pending deposits
+// Fetch pending deposits + payment method name
 try {
     $stmt = $pdo->query("
         SELECT 
             d.id, d.user_id, d.amount, d.method_id, d.proof, d.created_at,
-            u.email, u.phone
+            u.email, u.phone,
+            COALESCE(pm.name, 'Unknown Method') AS method_name
         FROM deposits d
         LEFT JOIN users u ON d.user_id = u.id
+        LEFT JOIN payment_methods pm ON d.method_id = pm.id
         WHERE d.status = 0
         ORDER BY d.created_at DESC
     ");
@@ -93,7 +91,7 @@ try {
   <div style="overflow-x:auto; margin: 0 auto; max-width: 100%;">
     <table style="
       width:100%; 
-      max-width: 1100px; 
+      max-width: 1200px; 
       margin: 0 auto 3rem; 
       border-collapse: separate; 
       border-spacing: 0 12px; 
@@ -123,8 +121,8 @@ try {
           <td style="padding:1.3rem 1rem; text-align:right; font-weight:600;">
             $<?= number_format($dep['amount'], 2) ?>
           </td>
-          <td style="padding:1.3rem 1rem; text-align:center;">
-            <?= htmlspecialchars($dep['method_id'] ? "Method #$dep[method_id]" : '—') ?>
+          <td style="padding:1.3rem 1rem; text-align:center; font-weight:500;">
+            <?= htmlspecialchars($dep['method_name']) ?>
           </td>
           <td style="padding:1.3rem 1rem; text-align:center;">
             <?php if (!empty($dep['proof'])): ?>
@@ -169,7 +167,7 @@ try {
 
   <?php endif; ?>
 
-  <!-- Fullscreen Image Preview Modal -->
+  <!-- Fullscreen Image Preview Modal (unchanged) -->
   <div id="previewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
     <div style="position:relative; max-width:95%; max-height:95vh;">
       <button onclick="closePreview()" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.6); border:none; color:white; font-size:2.5rem; width:50px; height:50px; border-radius:50%; cursor:pointer; z-index:10;">
@@ -181,6 +179,7 @@ try {
 </main>
 
 <script>
+// Preview functions (unchanged)
 function openPreview(src) {
   document.getElementById('previewImage').src = src;
   document.getElementById('previewModal').style.display = 'flex';
@@ -191,7 +190,6 @@ function closePreview() {
   document.getElementById('previewImage').src = '';
 }
 
-// Close modal when clicking outside image
 document.getElementById('previewModal').addEventListener('click', function(e) {
   if (e.target === this) closePreview();
 });
