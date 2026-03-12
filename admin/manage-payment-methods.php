@@ -6,7 +6,7 @@ $message = '';
 $error   = '';
 
 $upload_dir = __DIR__ . '/../../assets/images/qr/';
-$upload_url_prefix = 'assets/images/qr/';
+$upload_url_prefix = 'assets/images/qr/';   // path saved in DB
 
 // Ensure upload directory exists
 if (!is_dir($upload_dir)) {
@@ -21,13 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $wallet_address = trim($_POST['wallet_address'] ?? '');
         $status         = (int)($_POST['status'] ?? 1);
         $withdrawal_fee = (float)($_POST['withdrawal_fee'] ?? 0.00);
-        $qr_image_path  = trim($_POST['current_qr_image'] ?? ''); // keep old if no new upload
+        $qr_image_path  = trim($_POST['current_qr_image'] ?? ''); // for edit - keep old if no new upload
 
         if (empty($name)) {
             throw new Exception("Payment method name is required.");
         }
 
+        // ───────────────────────────────────────────────
         // Handle QR image upload
+        // ───────────────────────────────────────────────
         if (!empty($_FILES['qr_image']['name'])) {
             $file = $_FILES['qr_image'];
             $allowed = ['jpg','jpeg','png','webp','gif'];
@@ -36,10 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!in_array($ext, $allowed)) {
                 throw new Exception("Only JPG, JPEG, PNG, WEBP, GIF files are allowed.");
             }
-            if ($file['size'] > 2 * 1024 * 1024) {
+            if ($file['size'] > 2 * 1024 * 1024) { // 2MB
                 throw new Exception("File size must be less than 2MB.");
             }
 
+            // Clean and unique filename
             $safe_name = preg_replace('/[^a-z0-9-]/i', '-', pathinfo($file['name'], PATHINFO_FILENAME));
             $new_filename = $safe_name . '-' . date('Ymd-His') . '.' . $ext;
             $target_path = $upload_dir . $new_filename;
@@ -91,7 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// ───────────────────────────────────────────────
 // Delete action
+// ───────────────────────────────────────────────
 if (isset($_POST['action']) && $_POST['action'] === 'delete') {
     $id = (int)($_POST['id'] ?? 0);
     try {
@@ -252,26 +257,15 @@ try {
   </div>
   <?php endif; ?>
 
-  <!-- EDIT MODAL – now scrollable -->
+  <!-- EDIT MODAL -->
   <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; z-index:1000;">
-    <div style="
-      background:var(--card); 
-      border:1px solid var(--border); 
-      border-radius:12px; 
-      width:90%; 
-      max-width:800px; 
-      max-height:85vh;           /* ← key fix: limits height */
-      overflow-y:auto;           /* ← key fix: enables vertical scroll */
-      padding:2rem; 
-      position:relative;
-      scrollbar-width: thin;     /* nicer scrollbar on Firefox */
-    ">
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; width:90%; max-width:800px; padding:2rem; position:relative;">
       <button onclick="document.getElementById('editModal').style.display='none'" 
-              style="position:sticky; top:1rem; right:1.5rem; float:right; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer; z-index:10;">
+              style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer;">
         ×
       </button>
 
-      <h2 style="margin-bottom:1.8rem; text-align:center; padding-right:2.5rem;">Edit Payment Method</h2>
+      <h2 style="margin-bottom:1.8rem; text-align:center;">Edit Payment Method</h2>
 
       <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="edit">
@@ -312,7 +306,7 @@ try {
           </select>
         </div>
 
-        <button type="submit" class="btn" style="width:100%; padding:1rem; margin-top:1rem;">
+        <button type="submit" class="btn" style="width:100%; padding:1rem;">
           <i class="fas fa-save"></i> Save Changes
         </button>
       </form>
