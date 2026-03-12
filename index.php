@@ -75,25 +75,28 @@ unset($_SESSION['withdraw_msg']);
 <?php endif; ?>
 
 <!-- ================= NEWS SCROLL ================= -->
-
 <div class="news-wrapper">
-
     <div class="news-icon">
         <i class="fa-solid fa-bell"></i>
     </div>
-
     <div class="news-marquee">
         <div class="news-content">
-
             <?php
-            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+            // Fetch once into array (best practice - avoids re-querying DB)
+            $newsItems = $query->fetchAll(PDO::FETCH_ASSOC);
+
+            // First copy (visible start)
+            foreach ($newsItems as $row) {
+                echo "<span class='news-item'>" . htmlspecialchars($row['title']) . "</span>";
+            }
+
+            // Second copy (for seamless loop)
+            foreach ($newsItems as $row) {
                 echo "<span class='news-item'>" . htmlspecialchars($row['title']) . "</span>";
             }
             ?>
-
         </div>
     </div>
-
 </div>
 
 
