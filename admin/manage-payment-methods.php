@@ -4,8 +4,8 @@ require_once __DIR__ . '/inc/header.php';
 $message='';
 $error='';
 
-$qr_upload_dir=__DIR__.'../assets/images/qr/';
-$logo_upload_dir=__DIR__.'../assets/images/';
+$qr_upload_dir=__DIR__.'/../assets/images/qr/';
+$logo_upload_dir=__DIR__.'/../assets/images/';
 
 $qr_prefix='assets/images/qr/';
 $logo_prefix='assets/images/';
@@ -155,12 +155,12 @@ $stmt=$pdo->prepare("SELECT qr_image,image FROM payment_methods WHERE id=?");
 $stmt->execute([$id]);
 $files=$stmt->fetch(PDO::FETCH_ASSOC);
 
-if($files['qr_image'] && file_exists(__DIR__.'/../../'.$files['qr_image'])){
-unlink(__DIR__.'/../../'.$files['qr_image']);
+if($files['qr_image'] && file_exists(__DIR__.'/../'.$files['qr_image'])){
+unlink(__DIR__.'/../'.$files['qr_image']);
 }
 
-if($files['image'] && file_exists(__DIR__.'/../../'.$files['image'])){
-unlink(__DIR__.'/../../'.$files['image']);
+if($files['image'] && file_exists(__DIR__.'/../'.$files['image'])){
+unlink(__DIR__.'/../'.$files['image']);
 }
 
 $stmt=$pdo->prepare("DELETE FROM payment_methods WHERE id=?");
@@ -191,8 +191,6 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <?= htmlspecialchars($error) ?>
 </div>
 <?php endif; ?>
-
-<!-- ADD METHOD -->
 
 <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:3rem;max-width:900px;margin-left:auto;margin-right:auto;">
 
@@ -272,70 +270,6 @@ Add Payment Method
 </button>
 
 </form>
-
-</div>
-
-<!-- LIST METHODS -->
-
-<h2 style="text-align:center;margin:3rem 0 1.5rem;">Payment Methods</h2>
-
-<div style="overflow-x:auto;">
-
-<table style="width:100%;max-width:1100px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
-
-<thead>
-<tr style="background:#1f2937;">
-<th>ID</th>
-<th>Name</th>
-<th>Logo</th>
-<th>QR</th>
-<th>Status</th>
-<th>Actions</th>
-</tr>
-</thead>
-
-<tbody>
-
-<?php foreach($methods as $m): ?>
-
-<tr style="background:var(--card);">
-
-<td style="padding:1rem;text-align:center"><?= $m['id'] ?></td>
-
-<td style="padding:1rem"><?= htmlspecialchars($m['name']) ?></td>
-
-<td style="padding:1rem;text-align:center">
-<?php if($m['image']): ?>
-<img src="../<?= $m['image'] ?>" style="max-width:60px;">
-<?php endif; ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?php if($m['qr_image']): ?>
-<img src="../<?= $m['qr_image'] ?>" style="max-width:60px;">
-<?php endif; ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= $m['status'] ? 'Active':'Inactive' ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-
-<form method="POST" style="display:inline;">
-<input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?= $m['id'] ?>">
-<button class="btn red">Delete</button>
-</form>
-
-</td>
-
-</tr>
-
-<?php endforeach; ?>
-
-</tbody>
-</table>
 
 </div>
 
