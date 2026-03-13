@@ -322,6 +322,11 @@ Add Payment Method
 
 <td style="padding:1rem;text-align:center">
 
+<button class="btn" style="margin-right:6px"
+onclick='openEditModal(<?= json_encode($m, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
+Edit
+</button>
+
 <form method="POST" style="display:inline;">
 <input type="hidden" name="action" value="delete">
 <input type="hidden" name="id" value="<?= $m['id'] ?>">
@@ -339,6 +344,134 @@ Add Payment Method
 
 </div>
 
+<!-- EDIT MODAL -->
+
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:9999;">
+
+<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:800px;padding:2rem;position:relative;">
+
+<button onclick="closeEditModal()" style="position:absolute;right:15px;top:10px;font-size:22px;background:none;border:none;color:white;cursor:pointer">×</button>
+
+<h2 style="text-align:center;margin-bottom:1.5rem;">Edit Payment Method</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+<input type="hidden" name="action" value="edit">
+<input type="hidden" name="id" id="edit_id">
+<input type="hidden" name="current_qr_image" id="edit_current_qr">
+<input type="hidden" name="current_logo" id="edit_current_logo">
+
+<div style="margin-bottom:1.4rem;">
+<label>Method Name</label>
+<input type="text" name="name" id="edit_name" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Wallet Address</label>
+<input type="text" name="wallet_address" id="edit_wallet" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Crypto?</label>
+<select name="crypto" id="edit_crypto" style="width:100%;padding:0.8rem;">
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Type</label>
+<select name="type" id="edit_type" style="width:100%;padding:0.8rem;">
+<option value="">None</option>
+<option value="bank">Bank</option>
+<option value="momo">MOMO</option>
+</select>
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Network / Bank</label>
+<input type="text" name="network" id="edit_network" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Account Name</label>
+<input type="text" name="account_name" id="edit_account_name" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Account Number</label>
+<input type="text" name="account_number" id="edit_account_number" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Current Logo</label>
+<div id="edit_logo_preview"></div>
+<input type="file" name="logo">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Current QR</label>
+<div id="edit_qr_preview"></div>
+<input type="file" name="qr_image">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Withdrawal Fee</label>
+<input type="number" step="0.01" name="withdrawal_fee" id="edit_fee" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Status</label>
+<select name="status" id="edit_status" style="width:100%;padding:0.8rem;">
+<option value="1">Active</option>
+<option value="0">Inactive</option>
+</select>
+</div>
+
+<button class="btn" style="width:100%;padding:1rem;">
+Save Changes
+</button>
+
+</form>
+
+</div>
+
+</div>
+  
 </main>
+
+<script>
+
+function openEditModal(m){
+
+document.getElementById("editModal").style.display="flex";
+
+document.getElementById("edit_id").value=m.id;
+document.getElementById("edit_name").value=m.name;
+document.getElementById("edit_wallet").value=m.wallet_address || "";
+document.getElementById("edit_crypto").value=m.crypto;
+document.getElementById("edit_type").value=m.type || "";
+document.getElementById("edit_network").value=m.network || "";
+document.getElementById("edit_account_name").value=m.account_name || "";
+document.getElementById("edit_account_number").value=m.account_number || "";
+document.getElementById("edit_fee").value=m.withdrawal_fee || "0";
+document.getElementById("edit_status").value=m.status;
+
+document.getElementById("edit_current_qr").value=m.qr_image || "";
+document.getElementById("edit_current_logo").value=m.image || "";
+
+document.getElementById("edit_logo_preview").innerHTML=
+m.image ? `<img src="../${m.image}" style="max-width:80px">` : "No logo";
+
+document.getElementById("edit_qr_preview").innerHTML=
+m.qr_image ? `<img src="../${m.qr_image}" style="max-width:80px">` : "No QR";
+
+}
+
+function closeEditModal(){
+document.getElementById("editModal").style.display="none";
+}
+
+</script>
 
 <?php require_once __DIR__.'/inc/footer.php'; ?>
