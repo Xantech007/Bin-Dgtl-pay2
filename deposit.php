@@ -30,6 +30,8 @@ $msg="";
 if($_SERVER['REQUEST_METHOD']=="POST"){
 
 $amount=$_POST['amount'];
+$paid_amount=$_POST['paid_amount'];
+$paid_currency=$_POST['paid_currency'];
 
 if(isset($_FILES['proof']) && $_FILES['proof']['error']==0){
 
@@ -45,11 +47,18 @@ $target_file=$upload_dir.$file_name;
 move_uploaded_file($_FILES["proof"]["tmp_name"],$target_file);
 
 $stmt=$pdo->prepare(
-"INSERT INTO deposits(user_id,method_id,amount,proof)
-VALUES(?,?,?,?)"
+"INSERT INTO deposits(user_id,method_id,amount,paid_amount,paid_currency,proof)
+VALUES(?,?,?,?,?,?)"
 );
 
-$stmt->execute([$user_id,$method_id,$amount,$target_file]);
+$stmt->execute([
+$user_id,
+$method_id,
+$amount,
+$paid_amount,
+$paid_currency,
+$target_file
+]);
 
 $_SESSION['recharge_msg']="Recharge submitted successfully";
 header("Location: index.php");
@@ -154,15 +163,19 @@ readonly>
 
 <div class="upload-proof">
 
-<label>Enter Amount</label>
-<input type="number" name="amount" step="0.01" required>
+<label>Enter Amount (USD)</label>
+<input type="number" id="usdAmount" name="amount" step="0.01" required>
 
 </div>
 
 <div class="upload-proof">
 
-<label>Upload payment proof</label>
-<input type="file" name="proof" required>
+<label>Amount to Pay (<span id="currencyLabel"><?php echo $method['currency']; ?></span>)</label>
+
+<input type="text" id="convertedAmount" readonly>
+
+<input type="hidden" name="paid_amount" id="paidAmountInput">
+<input type="hidden" name="paid_currency" value="<?php echo htmlspecialchars($method['currency']); ?>">
 
 </div>
 
@@ -210,4 +223,23 @@ alert("Address copied");
 
 }
 
+
+const rate = <?php echo $method['conversion_rate'] ?: 1; ?>;
+
+const usdInput = document.getElementById("usdAmount");
+const converted = document.getElementById("convertedAmount");
+const hiddenPaid = document.getElementById("paidAmountInput");
+
+usdInput.addEventListener("input", function(){
+
+let usd = parseFloat(this.value) || 0;
+
+let convertedAmount = usd * rate;
+
+converted.value = convertedAmount.toFixed(2);
+
+hiddenPaid.value = convertedAmount.toFixed(2);
+
+});
+  
 </script>
