@@ -346,9 +346,9 @@ Edit
 
 <!-- EDIT MODAL -->
 
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:9999;">
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:9999;overflow-y:auto;padding:20px;">
 
-<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:800px;padding:2rem;position:relative;">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:800px;padding:2rem;position:relative;max-height:90vh;overflow-y:auto;">
 
 <button onclick="closeEditModal()" style="position:absolute;right:15px;top:10px;font-size:22px;background:none;border:none;color:white;cursor:pointer">×</button>
 
