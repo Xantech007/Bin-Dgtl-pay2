@@ -87,17 +87,20 @@ exit;
 </div>
 
 
+<!-- QR IMAGE (SHOW FOR ALL METHODS) -->
+
+<?php if(!empty($method['qr_image'])): ?>
+
+<div class="deposit-qr">
+<img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
+</div>
+
+<?php endif; ?>
+
+
 <?php if($method['crypto']==1): ?>
 
 <!-- CRYPTO SECTION -->
-
-<div class="deposit-qr">
-
-<?php if(!empty($method['qr_image'])): ?>
-<img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
-<?php endif; ?>
-
-</div>
 
 <div class="deposit-address-title">
 Address
@@ -115,7 +118,7 @@ readonly>
 </div>
 
 <?php else: ?>
-
+  
 <!-- BANK / MOMO SECTION -->
 
 <div class="deposit-info">
