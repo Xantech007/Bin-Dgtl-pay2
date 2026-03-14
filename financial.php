@@ -35,6 +35,7 @@ $deposits=$stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt=$pdo->prepare("
 SELECT
 amount,
+received,
 currency,
 method,
 status,
@@ -203,8 +204,14 @@ echo "Rejected";
 
 <div class="amount minus">
 
--<?php echo number_format($row['amount'],2); ?>
+-<?php echo number_format($row['amount'],2); ?> USD
+
+<br>
+
+<small>
+Received: <?php echo number_format($row['received'],2); ?>
 <?php echo htmlspecialchars($row['currency'] ?? 'USD'); ?>
+</small>
 
 </div>
 
