@@ -81,7 +81,6 @@ try {
     <a href="manage-deposits.php"    class="btn green"><i class="fas fa-wallet"></i> Manage Deposits</a>
     <a href="manage-withdrawals.php" class="btn red"><i class="fas fa-money-bill-wave"></i> Manage Withdrawals</a>
     <a href="manage-payment-methods.php" class="btn"><i class="fas fa-credit-card"></i> Payment Methods</a>
-    <a href="region-settings.php"    class="btn"><i class="fas fa-globe"></i> Region Settings</a>
     <a href="manage-vip.php"         class="btn"><i class="fas fa-crown"></i> Manage VIP</a>
     <a href="manage-news.php"        class="btn"><i class="fas fa-newspaper"></i> Manage News</a>
   </div>
