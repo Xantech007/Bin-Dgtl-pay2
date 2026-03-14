@@ -2466,6 +2466,12 @@ cursor:pointer;
 opacity:.7;
 }
 
+.change-container label{
+color:#fff;
+display:block;
+margin-bottom:6px;
+font-size:14px;
+}
 
 /* BUTTON */
 
