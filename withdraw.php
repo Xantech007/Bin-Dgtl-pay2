@@ -9,15 +9,15 @@ exit;
 
 $user_id=$_SESSION['user_id'];
 
-/* FETCH USER DATA */
+/* USER DATA */
 $stmt=$pdo->prepare("SELECT id,email,balance,password,country FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user=$stmt->fetch(PDO::FETCH_ASSOC);
 
-$balance=$user['balance'];
+$balance=$user['balance']; // USD balance
 $user_country=$user['country'];
 
-/* FETCH PAYMENT METHODS (COUNTRY BASED) */
+/* PAYMENT METHODS */
 
 $stmt=$pdo->prepare("
 SELECT * FROM payment_methods
@@ -34,46 +34,50 @@ $msg="";
 if($_SERVER['REQUEST_METHOD']=="POST"){
 
 $method=$_POST['method'];
-$amount=floatval($_POST['amount']);
+$amount_local=floatval($_POST['amount']); // entered in method currency
 $password=$_POST['password'];
 
 $address=trim($_POST['address'] ?? '');
-
 $network_bank=$_POST['network_bank'] ?? null;
 $account_name=$_POST['account_name'] ?? null;
 $account_number=$_POST['account_number'] ?? null;
 
-/* FETCH METHOD CONFIG */
+/* GET METHOD DATA */
 
-$stmt=$pdo->prepare("SELECT withdrawal_fee,min_withdraw FROM payment_methods WHERE name=?");
+$stmt=$pdo->prepare("SELECT conversion_rate,withdrawal_fee,min_withdraw FROM payment_methods WHERE name=?");
 $stmt->execute([$method]);
 $methodData=$stmt->fetch(PDO::FETCH_ASSOC);
 
-$feeRate=$methodData['withdrawal_fee'] ?? 0;
-$minWithdraw=$methodData['min_withdraw'] ?? 0;
+$rate=$methodData['conversion_rate'];
+$feeRate=$methodData['withdrawal_fee'];
+$minWithdraw=$methodData['min_withdraw'];
 
-/* PASSWORD CHECK */
+/* convert to USD */
+
+$amount_usd=$amount_local / $rate;
+
+/* VALIDATION */
 
 if(!password_verify($password,$user['password'])){
 
 $msg="Incorrect password";
 
-}elseif($amount>$balance){
+}elseif($amount_usd > $balance){
 
 $msg="Insufficient balance";
 
-}elseif($amount<=0){
+}elseif($amount_usd < $minWithdraw){
+
+$msg="Minimum withdrawal is ".$minWithdraw." USD";
+
+}elseif($amount_usd <= 0){
 
 $msg="Invalid withdrawal amount";
 
-}elseif($amount < $minWithdraw){
-
-$msg="Minimum withdrawal for this method is ".$minWithdraw." USDT";
-
 }else{
 
-$fee=$amount * $feeRate;
-$received=$amount-$fee;
+$fee=$amount_usd * $feeRate;
+$received=$amount_usd - $fee;
 
 /* SAVE WITHDRAWAL */
 
@@ -86,7 +90,7 @@ VALUES(?,?,?,?,?,?,?,?,?)
 $stmt->execute([
 $user_id,
 $method,
-$amount,
+$amount_usd,
 $address,
 $network_bank,
 $account_name,
@@ -95,10 +99,10 @@ $fee,
 $received
 ]);
 
-/* DEDUCT BALANCE */
+/* UPDATE BALANCE */
 
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
-->execute([$amount,$user_id]);
+->execute([$amount_usd,$user_id]);
 
 $_SESSION['withdraw_msg']="Withdrawal request submitted successfully";
 
@@ -126,7 +130,12 @@ exit;
 
 <div class="withdraw-balance">
 Total balance
-<strong><?php echo number_format($balance,2); ?> USDT</strong>
+<strong id="usdBalance"><?php echo number_format($balance,2); ?> USD</strong>
+</div>
+
+<div class="withdraw-balance">
+Available balance
+<strong id="convertedBalance">0</strong>
 </div>
 
 <form method="POST">
@@ -143,8 +152,10 @@ Total balance
 name="method"
 value="<?php echo htmlspecialchars($m['name']); ?>"
 data-type="<?php echo $m['crypto'] ? 'crypto' : $m['type']; ?>"
+data-rate="<?php echo $m['conversion_rate']; ?>"
 data-fee="<?php echo $m['withdrawal_fee']; ?>"
 data-min="<?php echo $m['min_withdraw']; ?>"
+data-currency="<?php echo $m['currency']; ?>"
 required>
 
 <img src="<?php echo htmlspecialchars($m['image']); ?>" class="method-icon">
@@ -157,17 +168,18 @@ required>
 
 </div>
 
-
 <input
 type="number"
 step="0.01"
 name="amount"
+id="amountInput"
 placeholder="Enter withdrawal amount"
 required
 class="withdraw-input">
 
+<div class="withdraw-note" id="usdEquivalent"></div>
 
-<!-- CRYPTO ADDRESS -->
+<!-- CRYPTO -->
 
 <div id="cryptoFields">
 
@@ -179,8 +191,7 @@ class="withdraw-input">
 
 </div>
 
-
-<!-- BANK FIELDS -->
+<!-- BANK -->
 
 <div id="bankFields" style="display:none">
 
@@ -204,8 +215,7 @@ class="withdraw-input">
 
 </div>
 
-
-<!-- MOMO FIELDS -->
+<!-- MOMO -->
 
 <div id="momoFields" style="display:none">
 
@@ -229,7 +239,6 @@ class="withdraw-input">
 
 </div>
 
-
 <input
 type="password"
 name="password"
@@ -237,17 +246,16 @@ placeholder="Enter your password"
 required
 class="withdraw-input">
 
-
 <div class="withdraw-summary">
 
 <div>
 Fees
-<span id="fee">0 USDT</span>
+<span id="fee">0</span>
 </div>
 
 <div>
 Actually received
-<span id="received">0 USDT</span>
+<span id="received">0</span>
 </div>
 
 </div>
@@ -266,103 +274,80 @@ Confirm
 
 <?php endif; ?>
 
-<div class="withdraw-info">
-
-TRC20 minimum withdrawal: $10  
-BEP20, POLYGON minimum withdrawal is $1
-
 </div>
-
-</div>
-
 
 <script>
 
 function goBack(){
-
 if(document.referrer){
 window.history.back();
 }else{
 window.location.href="index.php";
 }
-
 }
 
-
-/* WITHDRAWAL METHOD DATA */
-
-const amountInput=document.querySelector("input[name='amount']");
 const radios=document.querySelectorAll("input[name='method']");
+const amountInput=document.getElementById("amountInput");
 
+let rate=1;
 let feeRate=0;
-let minWithdraw=0;
+let currency="USD";
 
-/* METHOD CHANGE */
-
-radios.forEach(radio=>{
-
-radio.addEventListener("change",function(){
-
-feeRate=parseFloat(this.dataset.fee) || 0;
-minWithdraw=parseFloat(this.dataset.min) || 0;
-
-toggleFields(this.dataset.type);
-calculateWithdrawal();
-
-});
-
-});
-
-
-/* CALCULATE FEES */
-
-amountInput.addEventListener("input",calculateWithdrawal);
-
-function calculateWithdrawal(){
-
-let amount=parseFloat(amountInput.value) || 0;
-
-let fee=amount * feeRate;
-let received=amount - fee;
-
-document.getElementById("fee").innerText=fee.toFixed(2)+" USDT";
-
-if(amount>0 && amount < minWithdraw){
-
-document.getElementById("received").innerText="Min withdrawal: "+minWithdraw+" USDT";
-
-}else{
-
-document.getElementById("received").innerText=received.toFixed(2)+" USDT";
-
-}
-
-}
-
-
-/* TOGGLE WITHDRAWAL FIELDS */
+const usdBalance=<?php echo $balance; ?>;
 
 const cryptoFields=document.getElementById("cryptoFields");
 const bankFields=document.getElementById("bankFields");
 const momoFields=document.getElementById("momoFields");
 
-function toggleFields(type){
+radios.forEach(radio=>{
+
+radio.addEventListener("change",function(){
+
+rate=parseFloat(this.dataset.rate);
+feeRate=parseFloat(this.dataset.fee);
+currency=this.dataset.currency;
+
+let type=this.dataset.type;
 
 cryptoFields.style.display="none";
 bankFields.style.display="none";
 momoFields.style.display="none";
 
-if(type==="crypto"){
-cryptoFields.style.display="block";
-}
+if(type==="crypto") cryptoFields.style.display="block";
+if(type==="bank") bankFields.style.display="block";
+if(type==="momo") momoFields.style.display="block";
 
-if(type==="bank"){
-bankFields.style.display="block";
-}
+/* convert balance */
 
-if(type==="momo"){
-momoFields.style.display="block";
-}
+let convertedBalance=usdBalance*rate;
+
+document.getElementById("convertedBalance").innerText=
+convertedBalance.toFixed(2)+" "+currency;
+
+calculate();
+
+});
+
+});
+
+amountInput.addEventListener("input",calculate);
+
+function calculate(){
+
+let amountLocal=parseFloat(amountInput.value)||0;
+
+/* convert to usd */
+
+let amountUSD=amountLocal/rate;
+
+document.getElementById("usdEquivalent").innerText=
+"≈ "+amountUSD.toFixed(2)+" USD";
+
+let fee=amountUSD*feeRate;
+let received=amountUSD-fee;
+
+document.getElementById("fee").innerText=fee.toFixed(2)+" USD";
+document.getElementById("received").innerText=received.toFixed(2)+" USD";
 
 }
 
