@@ -1,89 +1,77 @@
 <?php
+// admin/manage-deposits.php
 require_once __DIR__ . '/inc/header.php';
 
-$message = '';
-$error   = '';
+$message='';
+$error='';
 
-/* HANDLE STATUS CHANGE */
+/* UPDATE STATUS */
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if($_SERVER['REQUEST_METHOD']==='POST'){
 
-    $deposit_id = (int)($_POST['deposit_id'] ?? 0);
-    $action     = $_POST['action'] ?? '';
+$deposit_id=(int)($_POST['deposit_id'] ?? 0);
+$new_status=(int)($_POST['status'] ?? -1);
 
-    if ($deposit_id <= 0 || !in_array($action,['approve','reject'])) {
+if($deposit_id<=0 || !in_array($new_status,[0,1,2])){
+$error="Invalid request";
+}else{
 
-        $error="Invalid request.";
+try{
 
-    } else {
+$pdo->beginTransaction();
 
-        try {
+$stmt=$pdo->prepare("SELECT user_id,amount,status FROM deposits WHERE id=?");
+$stmt->execute([$deposit_id]);
+$deposit=$stmt->fetch(PDO::FETCH_ASSOC);
 
-            $pdo->beginTransaction();
+if(!$deposit){
+throw new Exception("Deposit not found.");
+}
 
-            $stmt=$pdo->prepare("
-                SELECT user_id, amount, status
-                FROM deposits
-                WHERE id=?
-            ");
-            $stmt->execute([$deposit_id]);
-            $deposit=$stmt->fetch(PDO::FETCH_ASSOC);
+$current_status=$deposit['status'];
 
-            if(!$deposit){
-                throw new Exception("Deposit not found.");
-            }
+/* HANDLE BALANCE ADJUSTMENT */
 
-            /* APPROVE */
+if($current_status!=1 && $new_status==1){
 
-            if($action==="approve"){
+$pdo->prepare("
+UPDATE users 
+SET balance=balance+?
+WHERE id=?
+")->execute([$deposit['amount'],$deposit['user_id']]);
 
-                if($deposit['status']!=1){
+}
 
-                    $stmt=$pdo->prepare("
-                        UPDATE users
-                        SET balance=balance+?
-                        WHERE id=?
-                    ");
-                    $stmt->execute([$deposit['amount'],$deposit['user_id']]);
+if($current_status==1 && $new_status!=1){
 
-                }
+$pdo->prepare("
+UPDATE users
+SET balance=balance-?
+WHERE id=?
+")->execute([$deposit['amount'],$deposit['user_id']]);
 
-                $stmt=$pdo->prepare("
-                    UPDATE deposits
-                    SET status=1, updated_at=NOW()
-                    WHERE id=?
-                ");
-                $stmt->execute([$deposit_id]);
+}
 
-                $message="Deposit #{$deposit_id} approved.";
+$stmt=$pdo->prepare("
+UPDATE deposits
+SET status=?,updated_at=NOW()
+WHERE id=?
+");
 
-            }
+$stmt->execute([$new_status,$deposit_id]);
 
-            /* REJECT */
+$pdo->commit();
 
-            if($action==="reject"){
+$message="Deposit #{$deposit_id} updated successfully.";
 
-                $stmt=$pdo->prepare("
-                    UPDATE deposits
-                    SET status=2, updated_at=NOW()
-                    WHERE id=?
-                ");
-                $stmt->execute([$deposit_id]);
+}catch(Exception $e){
 
-                $message="Deposit #{$deposit_id} rejected.";
+$pdo->rollBack();
+$error=$e->getMessage();
 
-            }
+}
 
-            $pdo->commit();
-
-        } catch(Exception $e){
-
-            $pdo->rollBack();
-            $error="Operation failed: ".$e->getMessage();
-
-        }
-
-    }
+}
 
 }
 
@@ -105,10 +93,9 @@ d.created_at,
 u.email,
 u.phone,
 
-COALESCE(pm.name,'Unknown') AS method_name
+COALESCE(pm.name,'Unknown Method') AS method_name
 
 FROM deposits d
-
 LEFT JOIN users u ON d.user_id=u.id
 LEFT JOIN payment_methods pm ON d.method_id=pm.id
 
@@ -119,7 +106,7 @@ $deposits=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 }catch(PDOException $e){
 
-$error="Failed to load deposits: ".$e->getMessage();
+$error="Failed to load deposits";
 $deposits=[];
 
 }
@@ -133,13 +120,14 @@ Manage Deposits
 </h1>
 
 
-<?php if ($message): ?>
+<?php if($message): ?>
 <div style="background:#238636;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
 <?= htmlspecialchars($message) ?>
 </div>
 <?php endif; ?>
 
-<?php if ($error): ?>
+
+<?php if($error): ?>
 <div style="background:#f85149;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
 <?= htmlspecialchars($error) ?>
 </div>
@@ -153,6 +141,7 @@ No deposits found.
 </p>
 
 <?php else: ?>
+
 
 <div style="overflow-x:auto;margin:0 auto;max-width:100%;">
 
@@ -168,19 +157,20 @@ border-spacing:0 12px;
 
 <tr style="background:#1f2937;color:#e6edf3;">
 
-<th style="padding:1.2rem 1rem;">ID</th>
-<th style="padding:1.2rem 1rem;">User</th>
-<th style="padding:1.2rem 1rem;">Amount</th>
-<th style="padding:1.2rem 1rem;">Paid</th>
-<th style="padding:1.2rem 1rem;">Method</th>
-<th style="padding:1.2rem 1rem;">Proof</th>
-<th style="padding:1.2rem 1rem;">Status</th>
-<th style="padding:1.2rem 1rem;">Date</th>
-<th style="padding:1.2rem 1rem;">Actions</th>
+<th style="padding:1.2rem;">ID</th>
+<th style="padding:1.2rem;">User</th>
+<th style="padding:1.2rem;">Method</th>
+<th style="padding:1.2rem;">Amount</th>
+<th style="padding:1.2rem;">Paid</th>
+<th style="padding:1.2rem;">Proof</th>
+<th style="padding:1.2rem;">Status</th>
+<th style="padding:1.2rem;">Date</th>
+<th style="padding:1.2rem;">Update</th>
 
 </tr>
 
 </thead>
+
 
 <tbody>
 
@@ -188,44 +178,54 @@ border-spacing:0 12px;
 
 <tr style="background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,0.3);">
 
-<td style="padding:1.3rem 1rem;text-align:center;">
+<td style="padding:1.2rem;text-align:center;">
 <?= $dep['id'] ?>
 </td>
 
-<td style="padding:1.3rem 1rem;">
-<?= htmlspecialchars($dep['email'] ?? '—') ?><br>
-<small style="color:var(--text-muted);">
+
+<td style="padding:1.2rem;">
+<?= htmlspecialchars($dep['email'] ?? '—') ?>
+<br>
+<small style="color:var(--text-muted)">
 <?= htmlspecialchars($dep['phone'] ?? '—') ?>
 </small>
 </td>
 
-<td style="padding:1.3rem 1rem;text-align:right;font-weight:600;">
-$<?= number_format($dep['amount'],2) ?> USD
-</td>
 
-<td style="padding:1.3rem 1rem;text-align:right;">
-<?php if($dep['paid_amount']): ?>
-<?= number_format($dep['paid_amount'],2)." ".htmlspecialchars($dep['paid_currency']); ?>
-<?php else: ?>
-—
-<?php endif; ?>
-</td>
-
-<td style="padding:1.3rem 1rem;text-align:center;">
+<td style="padding:1.2rem;text-align:center;">
 <?= htmlspecialchars($dep['method_name']) ?>
 </td>
 
-<td style="padding:1.3rem 1rem;text-align:center;">
+
+<td style="padding:1.2rem;text-align:right;font-weight:600;">
+$<?= number_format($dep['amount'],2) ?>
+</td>
+
+
+<td style="padding:1.2rem;text-align:right;">
+
+<?php if($dep['paid_amount']): ?>
+
+<?= number_format($dep['paid_amount'],2)." ".htmlspecialchars($dep['paid_currency']) ?>
+
+<?php else: ?>
+
+—
+
+<?php endif; ?>
+
+</td>
+
+
+<td style="padding:1.2rem;text-align:center;">
 
 <?php if(!empty($dep['proof'])): ?>
 
-<?php $proof='../'.$dep['proof']; ?>
+<?php $proof="../".$dep['proof']; ?>
 
-<div style="cursor:pointer" onclick="openPreview('<?= $proof ?>')">
-
-<img src="<?= $proof ?>" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
-
-</div>
+<img src="<?= $proof ?>"
+style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;"
+onclick="openPreview('<?= $proof ?>')">
 
 <?php else: ?>
 
@@ -235,42 +235,41 @@ $<?= number_format($dep['amount'],2) ?> USD
 
 </td>
 
-<td style="padding:1.3rem 1rem;text-align:center;">
+
+<td style="padding:1.2rem;text-align:center;">
 
 <?php
-if($dep['status']==0){
-echo "<span style='color:#f59e0b;'>Pending</span>";
-}elseif($dep['status']==1){
-echo "<span style='color:#22c55e;'>Approved</span>";
-}else{
-echo "<span style='color:#ef4444;'>Rejected</span>";
-}
+
+if($dep['status']==0) echo "Pending";
+elseif($dep['status']==1) echo "Approved";
+else echo "Rejected";
+
 ?>
 
 </td>
 
-<td style="padding:1.3rem 1rem;text-align:center;">
-<?= date('Y-m-d H:i',strtotime($dep['created_at'])) ?>
+
+<td style="padding:1.2rem;text-align:center;">
+<?= date("Y-m-d H:i",strtotime($dep['created_at'])) ?>
 </td>
 
-<td style="padding:1.3rem 1rem;text-align:center;white-space:nowrap;">
 
-<form method="POST" style="display:inline;">
+<td style="padding:1.2rem;text-align:center;">
+
+<form method="POST">
+
 <input type="hidden" name="deposit_id" value="<?= $dep['id'] ?>">
-<input type="hidden" name="action" value="approve">
 
-<button type="submit" class="btn green" style="padding:0.6rem 1.2rem;font-size:0.95rem;margin-right:0.5rem;">
-Approve
-</button>
+<select name="status" style="padding:0.4rem;border-radius:6px;margin-right:6px;">
 
-</form>
+<option value="0" <?= $dep['status']==0?'selected':'' ?>>Pending</option>
+<option value="1" <?= $dep['status']==1?'selected':'' ?>>Approved</option>
+<option value="2" <?= $dep['status']==2?'selected':'' ?>>Rejected</option>
 
-<form method="POST" style="display:inline;">
-<input type="hidden" name="deposit_id" value="<?= $dep['id'] ?>">
-<input type="hidden" name="action" value="reject">
+</select>
 
-<button type="submit" class="btn red" style="padding:0.6rem 1.2rem;font-size:0.95rem;">
-Reject
+<button class="btn" style="padding:0.4rem 0.9rem;font-size:0.9rem;">
+Update
 </button>
 
 </form>
@@ -290,15 +289,18 @@ Reject
 <?php endif; ?>
 
 
-<!-- IMAGE PREVIEW -->
 
-<div id="previewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;align-items:center;justify-content:center;">
+<div id="previewModal"
+style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:2000;align-items:center;justify-content:center;">
 
-<img id="previewImage" style="max-width:95%;max-height:95%;border-radius:12px;">
+<img id="previewImage"
+style="max-width:95%;max-height:90vh;border-radius:12px;">
 
 </div>
 
+
 </main>
+
 
 
 <script>
@@ -318,4 +320,5 @@ this.style.display="none";
 
 </script>
 
-<?php require_once __DIR__ . '/inc/footer.php'; ?>
+
+<?php require_once __DIR__.'/inc/footer.php'; ?>
