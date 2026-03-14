@@ -114,7 +114,17 @@ $country,
 0
 ]);
 
-header("Location: login.php");
+$user_id = $pdo->lastInsertId();
+
+/* AUTO LOGIN */
+session_regenerate_id(true);
+
+$_SESSION['user_id']=$user_id;
+$_SESSION['email']=$email;
+$_SESSION['vip']=0;
+$_SESSION['balance']=0;
+
+header("Location: index.php");
 exit;
 
 }
@@ -148,7 +158,17 @@ $country,
 0
 ]);
 
-header("Location: login.php");
+$user_id = $pdo->lastInsertId();
+
+/* AUTO LOGIN */
+session_regenerate_id(true);
+
+$_SESSION['user_id']=$user_id;
+$_SESSION['phone']=$phone;
+$_SESSION['vip']=0;
+$_SESSION['balance']=0;
+
+header("Location: index.php");
 exit;
 
 }
