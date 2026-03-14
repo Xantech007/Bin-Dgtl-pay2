@@ -10,14 +10,15 @@ exit;
 $user_id=$_SESSION['user_id'];
 
 /* USER DATA */
+
 $stmt=$pdo->prepare("SELECT id,email,balance,password,country FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user=$stmt->fetch(PDO::FETCH_ASSOC);
 
-$balance=$user['balance']; // USD balance
+$balance=$user['balance']; // stored in USD
 $user_country=$user['country'];
 
-/* PAYMENT METHODS */
+/* FETCH PAYMENT METHODS */
 
 $stmt=$pdo->prepare("
 SELECT * FROM payment_methods
@@ -34,50 +35,50 @@ $msg="";
 if($_SERVER['REQUEST_METHOD']=="POST"){
 
 $method=$_POST['method'];
-$amount_local=floatval($_POST['amount']); // entered in method currency
+$amount_local=floatval($_POST['amount']); // user enters local currency
 $password=$_POST['password'];
 
 $address=trim($_POST['address'] ?? '');
+
 $network_bank=$_POST['network_bank'] ?? null;
 $account_name=$_POST['account_name'] ?? null;
 $account_number=$_POST['account_number'] ?? null;
 
-/* GET METHOD DATA */
+/* FETCH METHOD SETTINGS */
 
 $stmt=$pdo->prepare("SELECT conversion_rate,withdrawal_fee,min_withdraw FROM payment_methods WHERE name=?");
 $stmt->execute([$method]);
 $methodData=$stmt->fetch(PDO::FETCH_ASSOC);
 
 $rate=$methodData['conversion_rate'];
-$feeRate=$methodData['withdrawal_fee'];
+$fee=$methodData['withdrawal_fee'];   // fixed fee
 $minWithdraw=$methodData['min_withdraw'];
 
-/* convert to USD */
+/* CONVERT TO USD */
 
 $amount_usd=$amount_local / $rate;
 
-/* VALIDATION */
+/* VALIDATIONS */
 
 if(!password_verify($password,$user['password'])){
 
 $msg="Incorrect password";
 
-}elseif($amount_usd > $balance){
+}elseif($amount_usd>$balance){
 
 $msg="Insufficient balance";
 
-}elseif($amount_usd < $minWithdraw){
+}elseif($amount_local<$minWithdraw){
 
-$msg="Minimum withdrawal is ".$minWithdraw." USD";
+$msg="Minimum withdrawal is ".$minWithdraw;
 
-}elseif($amount_usd <= 0){
+}elseif($amount_local<=0){
 
 $msg="Invalid withdrawal amount";
 
 }else{
 
-$fee=$amount_usd * $feeRate;
-$received=$amount_usd - $fee;
+$received=$amount_local - $fee;
 
 /* SAVE WITHDRAWAL */
 
@@ -99,7 +100,7 @@ $fee,
 $received
 ]);
 
-/* UPDATE BALANCE */
+/* DEDUCT USER BALANCE */
 
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
 ->execute([$amount_usd,$user_id]);
@@ -130,7 +131,7 @@ exit;
 
 <div class="withdraw-balance">
 Total balance
-<strong id="usdBalance"><?php echo number_format($balance,2); ?> USD</strong>
+<strong><?php echo number_format($balance,2); ?> USD</strong>
 </div>
 
 <div class="withdraw-balance">
@@ -290,7 +291,7 @@ const radios=document.querySelectorAll("input[name='method']");
 const amountInput=document.getElementById("amountInput");
 
 let rate=1;
-let feeRate=0;
+let fee=0;
 let currency="USD";
 
 const usdBalance=<?php echo $balance; ?>;
@@ -304,7 +305,7 @@ radios.forEach(radio=>{
 radio.addEventListener("change",function(){
 
 rate=parseFloat(this.dataset.rate);
-feeRate=parseFloat(this.dataset.fee);
+fee=parseFloat(this.dataset.fee);
 currency=this.dataset.currency;
 
 let type=this.dataset.type;
@@ -336,18 +337,15 @@ function calculate(){
 
 let amountLocal=parseFloat(amountInput.value)||0;
 
-/* convert to usd */
-
 let amountUSD=amountLocal/rate;
 
 document.getElementById("usdEquivalent").innerText=
 "≈ "+amountUSD.toFixed(2)+" USD";
 
-let fee=amountUSD*feeRate;
-let received=amountUSD-fee;
+let received=amountLocal-fee;
 
-document.getElementById("fee").innerText=fee.toFixed(2)+" USD";
-document.getElementById("received").innerText=received.toFixed(2)+" USD";
+document.getElementById("fee").innerText=fee+" "+currency;
+document.getElementById("received").innerText=received.toFixed(2)+" "+currency;
 
 }
 
