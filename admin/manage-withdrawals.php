@@ -81,6 +81,7 @@ SELECT
 w.id,
 w.user_id,
 w.method,
+w.currency,
 w.amount,
 w.address,
 w.network_bank,
@@ -202,11 +203,11 @@ $<?= number_format($wd['amount'],2) ?>
 </td>
 
 <td style="padding:1.3rem 0.9rem;text-align:right;color:#f85149;">
-<?= number_format($wd['fee'],2) ?>
+<?= number_format($wd['fee'],2) ?> <?= htmlspecialchars($wd['currency'] ?? '') ?>
 </td>
 
 <td style="padding:1.3rem 0.9rem;text-align:right;color:#10b981;">
-<?= number_format($wd['received'],2) ?>
+<?= number_format($wd['received'],2) ?> <?= htmlspecialchars($wd['currency'] ?? '') ?>
 </td>
 
 <td style="padding:1.3rem 0.9rem;text-align:center;color:var(--text-muted);">
