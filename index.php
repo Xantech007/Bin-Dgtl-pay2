@@ -11,12 +11,12 @@ require_once "config/database.php";
 /* Fetch logged in user */
 $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT email, vip_level, balance FROM users WHERE id=?");
+$stmt = $pdo->prepare("SELECT email, vip, balance FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $user_email = $user['email'] ?? "Unknown";
-$user_vip = "VIP".intval($user['vip_level'] ?? 0);
+$user_vip = "VIP".intval($user['vip'] ?? 0);
 $user_balance = $user['balance'] ?? 0;
 
 /* Fetch news */
@@ -199,7 +199,7 @@ Task Reset Countdown
 
 <img src="assets/images/task.png" class="vip-icon">
 
-<?php if($user['vip_level'] < $vip['id']): ?>
+<?php if($user['vip'] < $vip['id']): ?>
 <i class="fa-solid fa-lock lock-overlay"></i>
 <?php endif; ?>
 
