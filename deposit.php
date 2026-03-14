@@ -179,6 +179,14 @@ readonly>
 
 </div>
 
+<div class="upload-proof">
+
+<label>Upload payment proof</label>
+
+<input type="file" name="proof" accept="image/*" required>
+
+</div>
+
 <button class="deposit-btn">
 Recharge completed
 </button>
