@@ -75,7 +75,7 @@ body{
 display:flex;
 align-items:center;
 background:#111;
-padding:5px 20px;
+padding:20px 20px;
 overflow:hidden;
 border-bottom:1px solid #111;
 }
