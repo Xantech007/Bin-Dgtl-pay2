@@ -47,7 +47,11 @@ $account_number=$_POST['account_number'] ?? null;
 
 /* FETCH METHOD SETTINGS */
 
-$stmt=$pdo->prepare("SELECT conversion_rate,withdrawal_fee,min_withdraw,currency FROM payment_methods WHERE name=?");
+$stmt=$pdo->prepare("
+SELECT conversion_rate,withdrawal_fee,min_withdraw,currency
+FROM payment_methods
+WHERE name=?
+");
 $stmt->execute([$method]);
 $methodData=$stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -58,7 +62,7 @@ $minWithdraw=$methodData['min_withdraw'];
 
 /* CONVERT TO USD */
 
-$amount_usd=$amount_local / $rate;
+$amount_usd=$amount_local/$rate;
 
 /* VALIDATIONS */
 
@@ -80,9 +84,9 @@ $msg="Invalid withdrawal amount";
 
 }else{
 
-$received=$amount_local - $fee;
+$received=$amount_local-$fee;
 
-/* SAVE WITHDRAWAL */
+/* INSERT WITHDRAWAL */
 
 $stmt=$pdo->prepare("
 INSERT INTO withdrawals
@@ -103,16 +107,18 @@ $fee,
 $received
 ]);
 
-/* DEDUCT USER BALANCE */
+/* DEDUCT BALANCE */
 
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
 ->execute([$amount_usd,$user_id]);
+
+/* GET INSERTED ID */
 
 $withdraw_id=$pdo->lastInsertId();
 
 /* REDIRECT TO RECEIPT */
 
-echo "<script>window.location='withdrawal-receipt.php?id=".$withdraw_id."';</script>";
+header("Location: withdrawal-receipt.php?id=".$withdraw_id);
 exit;
 
 }
@@ -252,22 +258,8 @@ placeholder="Enter your password"
 required
 class="withdraw-input">
 
-<div class="withdraw-summary">
-
-<div>
-Fees
-<span id="fee">0</span>
-</div>
-
-<div>
-Payout
-<span id="received">0</span>
-</div>
-
-</div>
-
 <button class="withdraw-btn">
-Confirm
+Confirm Withdrawal
 </button>
 
 </form>
@@ -290,68 +282,6 @@ window.history.back();
 }else{
 window.location.href="index.php";
 }
-}
-
-const radios=document.querySelectorAll("input[name='method']");
-const amountInput=document.getElementById("amountInput");
-
-let rate=1;
-let fee=0;
-let currency="USD";
-
-const usdBalance=<?php echo $balance; ?>;
-
-const cryptoFields=document.getElementById("cryptoFields");
-const bankFields=document.getElementById("bankFields");
-const momoFields=document.getElementById("momoFields");
-
-radios.forEach(radio=>{
-
-radio.addEventListener("change",function(){
-
-rate=parseFloat(this.dataset.rate);
-fee=parseFloat(this.dataset.fee);
-currency=this.dataset.currency;
-
-let type=this.dataset.type;
-
-cryptoFields.style.display="none";
-bankFields.style.display="none";
-momoFields.style.display="none";
-
-if(type==="crypto") cryptoFields.style.display="block";
-if(type==="bank") bankFields.style.display="block";
-if(type==="momo") momoFields.style.display="block";
-
-/* convert balance */
-
-let convertedBalance=usdBalance*rate;
-
-document.getElementById("convertedBalance").innerText=
-convertedBalance.toFixed(2)+" "+currency;
-
-calculate();
-
-});
-
-});
-
-amountInput.addEventListener("input",calculate);
-
-function calculate(){
-
-let amountLocal=parseFloat(amountInput.value)||0;
-
-let amountUSD=amountLocal/rate;
-
-document.getElementById("usdEquivalent").innerText=
-"≈ "+amountUSD.toFixed(2)+" USD";
-
-let received=amountLocal-fee;
-
-document.getElementById("fee").innerText=fee+" "+currency;
-document.getElementById("received").innerText=received.toFixed(2)+" "+currency;
-
 }
 
 </script>
