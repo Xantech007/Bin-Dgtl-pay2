@@ -106,9 +106,12 @@ $received
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
 ->execute([$amount_usd,$user_id]);
 
-$_SESSION['withdraw_msg']="Withdrawal request submitted successfully";
+$withdraw_id = $pdo->lastInsertId();
 
-header("Location: index.php");
+/* store receipt id */
+$_SESSION['withdraw_receipt'] = $withdraw_id;
+
+header("Location: withdrawal-receipt.php?id=".$withdraw_id);
 exit;
 
 }
