@@ -1091,6 +1091,13 @@ font-size:16px;
 font-weight:600;
 }
 
+.tab-content{
+display:none;
+}
+
+.tab-content.active{
+display:block;
+}
 
 /* ================= TASK STATS ================= */
 
