@@ -84,7 +84,7 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
              ->execute([$amount_usd,$user_id]);
 
         /* REDIRECT TO RECEIPT WITH USER ID + WITHDRAWAL ID */
-        header("Location: withdrawal-receipt.php?user_id=$user_id&withdrawal_id=$withdrawal_id");
+        header("Location: withdraw-receipt.php?user_id=$user_id&withdrawal_id=$withdrawal_id");
         exit;
     }
 }
