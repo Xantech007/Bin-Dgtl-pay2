@@ -198,6 +198,10 @@ Note. Send the payment using MOMO to the number above and upload proof.
 
 </div>
 
+<div id="copyToast" class="copy-toast">
+    Copied ✓
+</div>
+
 <?php include "inc/footer.php"; ?>
 
 <script>
@@ -238,4 +242,3 @@ hiddenPaid.value = convertedAmount.toFixed(2);
 });
   
 </script>
-```
