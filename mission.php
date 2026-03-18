@@ -446,7 +446,7 @@ setInterval(updateVIPTimers,1000);
 
 function switchTab(tab, el){
 
-document.querySelectorAll(".task-content")
+document.querySelectorAll(".tab-content")
 .forEach(function(content){
     content.classList.remove("active");
 });
