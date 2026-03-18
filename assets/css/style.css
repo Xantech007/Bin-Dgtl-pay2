@@ -254,6 +254,8 @@ color:#fff;
 
 .task-section{
 margin:20px;
+position:relative;
+z-index:1;
 }
 
 .task-title{
@@ -478,7 +480,7 @@ border-radius:10px;
 
 /* Full-width wrapper touching screen edges */
 .footer-wrapper {
-    z-index:9999;
+    z-index:99999;
     position: fixed;
     bottom: 0;
     left: 0;
