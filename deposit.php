@@ -1,3 +1,4 @@
+```php
 <?php
 session_start();
 require_once "config/database.php";
@@ -95,15 +96,11 @@ exit;
 
 </div>
 
-
-<!-- QR IMAGE (SHOW FOR ALL METHODS) -->
-
+<!-- QR IMAGE -->
 <?php if(!empty($method['qr_image'])): ?>
-
 <div class="deposit-qr">
 <img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
 </div>
-
 <?php endif; ?>
 
 
@@ -116,49 +113,44 @@ Address
 </div>
 
 <div class="deposit-address">
-
 <input type="text"
 value="<?php echo htmlspecialchars($method['wallet_address']); ?>"
 id="walletAddress"
 readonly>
 
 <button type="button" onclick="copyAddress()">Copy</button>
-
 </div>
 
 <?php else: ?>
-  
+
 <!-- BANK / MOMO SECTION -->
 
-<div class="deposit-info">
+<div class="deposit-address-title">
+<?php echo ($method['type']=="bank") ? "Bank Details" : "MOMO Details"; ?>
+</div>
 
-<?php if($method['type']=="bank"): ?>
+<!-- NETWORK / BANK -->
+<div class="deposit-address">
+<input type="text"
+value="<?php echo htmlspecialchars($method['network']); ?>"
+readonly>
+</div>
 
-<p><strong>Bank:</strong> <?php echo htmlspecialchars($method['network']); ?></p>
+<!-- ACCOUNT NAME -->
+<div class="deposit-address">
+<input type="text"
+value="<?php echo htmlspecialchars($method['account_name']); ?>"
+readonly>
+</div>
 
-<?php else: ?>
+<!-- ACCOUNT NUMBER -->
+<div class="deposit-address">
+<input type="text"
+value="<?php echo htmlspecialchars($method['account_number']); ?>"
+id="accountNumber"
+readonly>
 
-<p><strong>Network:</strong> <?php echo htmlspecialchars($method['network']); ?></p>
-
-<?php endif; ?>
-
-<p><strong>
-<?php echo ($method['type']=="bank") ? "Account Name" : "MOMO Name"; ?>
-:</strong>
-<?php echo htmlspecialchars($method['account_name']); ?>
-</p>
-
-<p>
-<strong>
-<?php echo ($method['type']=="bank") ? "Account Number" : "MOMO Number"; ?>
-:</strong>
-
-<span id="accountNumber" class="copy-number">
-<?php echo htmlspecialchars($method['account_number']); ?>
-</span>
-
-</p>
-
+<button type="button" onclick="copyAccount()">Copy</button>
 </div>
 
 <?php endif; ?>
@@ -167,10 +159,8 @@ readonly>
 <form method="POST" enctype="multipart/form-data">
 
 <div class="upload-proof">
-
 <label>Enter Amount (USD)</label>
 <input type="number" id="usdAmount" name="amount" step="0.01" required>
-
 </div>
 
 <div class="upload-proof">
@@ -185,11 +175,8 @@ readonly>
 </div>
 
 <div class="upload-proof">
-
 <label>Upload payment proof</label>
-
 <input type="file" name="proof" accept="image/*" required>
-
 </div>
 
 <button class="deposit-btn">
@@ -198,21 +185,14 @@ Recharge completed
 
 </form>
 
-
 <div class="deposit-note">
 
 <?php if($method['crypto']==1): ?>
-
 Note. Please use the correct cryptocurrency network when depositing.
-
 <?php elseif($method['type']=="bank"): ?>
-
 Note. Transfer the exact amount to the bank account above and upload the receipt.
-
 <?php else: ?>
-
 Note. Send the payment using MOMO to the number above and upload proof.
-
 <?php endif; ?>
 
 </div>
@@ -223,54 +203,25 @@ Note. Send the payment using MOMO to the number above and upload proof.
 
 <script>
 
-let pressTimer;
-const accountEl = document.getElementById("accountNumber");
-
-if(accountEl){
-
-accountEl.addEventListener("touchstart", startPress);
-accountEl.addEventListener("mousedown", startPress);
-
-accountEl.addEventListener("touchend", cancelPress);
-accountEl.addEventListener("mouseup", cancelPress);
-accountEl.addEventListener("mouseleave", cancelPress);
-
-function startPress(){
-    pressTimer = setTimeout(copyAccountNumber, 1500); // 1.5 seconds
-}
-
-function cancelPress(){
-    clearTimeout(pressTimer);
-}
-
-function copyAccountNumber(){
-
-    const text = accountEl.innerText.trim();
-
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Account number copied");
-    });
-
-}
-
-}
-
-  
-
+/* COPY CRYPTO ADDRESS */
 function copyAddress(){
-
 var copyText=document.getElementById("walletAddress");
-
 copyText.select();
 copyText.setSelectionRange(0,99999);
-
 navigator.clipboard.writeText(copyText.value);
-
 alert("Address copied");
-
 }
 
+/* COPY ACCOUNT NUMBER */
+function copyAccount(){
+var copyText=document.getElementById("accountNumber");
+copyText.select();
+copyText.setSelectionRange(0,99999);
+navigator.clipboard.writeText(copyText.value);
+alert("Account number copied");
+}
 
+/* CONVERSION */
 const rate = <?php echo $method['conversion_rate'] ?: 1; ?>;
 
 const usdInput = document.getElementById("usdAmount");
@@ -280,13 +231,12 @@ const hiddenPaid = document.getElementById("paidAmountInput");
 usdInput.addEventListener("input", function(){
 
 let usd = parseFloat(this.value) || 0;
-
 let convertedAmount = usd * rate;
 
 converted.value = convertedAmount.toFixed(2);
-
 hiddenPaid.value = convertedAmount.toFixed(2);
 
 });
   
 </script>
+```
