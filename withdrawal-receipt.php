@@ -132,4 +132,4 @@ $email = $user['email'] ?? 'N/A';
 }
 </style>
 
-<?php include "inc/footer.php"; ?>
+<?php include "inc/footer-exception.php"; ?>
