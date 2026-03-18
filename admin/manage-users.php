@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
             $stmt = $pdo->prepare($sql);
             $params = [
                 ':email'              => $email,
-                ':phone'              => $phone,
+                ':phone'              => $phone !== '' ? $phone : null, // ✅ FIXED
                 ':country'            => $country ? strtoupper($country) : null, // normalize to uppercase
                 ':vip_level'          => $vip_level,
                 ':balance'            => $balance,
