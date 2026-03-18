@@ -35,7 +35,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <script>
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("/service-worker.js");
+  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 
