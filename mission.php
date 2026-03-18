@@ -175,11 +175,11 @@ $remaining_tasks=count($running_vips);
 
 <div class="task-tabs">
 
-<span class="tab active" onclick="switchTab('progress')">
+<span class="tab active" onclick="switchTab('progress', this)">
 In progress
 </span>
 
-<span class="tab" onclick="switchTab('completed')">
+<span class="tab" onclick="switchTab('completed', this)">
 Completed
 </span>
 
@@ -444,17 +444,21 @@ setInterval(updateVIPTimers,1000);
 
 /* TAB SWITCH */
 
-function switchTab(tab){
+function switchTab(tab, el){
 
 document.querySelectorAll(".task-content")
-.forEach(el=>el.classList.remove("active"));
+.forEach(function(content){
+    content.classList.remove("active");
+});
 
 document.getElementById(tab).classList.add("active");
 
 document.querySelectorAll(".tab")
-.forEach(el=>el.classList.remove("active"));
+.forEach(function(t){
+    t.classList.remove("active");
+});
 
-event.target.classList.add("active");
+el.classList.add("active");
 
 }
 
