@@ -34,7 +34,7 @@
 |Column|Type|Null|Default
 |------
 |//**id**//|int(11)|No|
-|title|text|Yes|NULL
+|title|mediumtext|Yes|NULL
 |status|tinyint(1)|Yes|1
 |created_at|timestamp|Yes|current_timestamp()
 |updated_at|timestamp|Yes|NULL
